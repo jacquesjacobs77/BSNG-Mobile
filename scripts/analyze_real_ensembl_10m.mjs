@@ -11,6 +11,7 @@ import { createGzip } from 'node:zlib';
 import { once } from 'node:events';
 import { finished } from 'node:stream/promises';
 import { createGenomeAccumulator, MAX_REGION_BASES } from '../src/lib/genome-stream.mjs';
+import { createStreamedRecognitionAssay } from '../src/lib/bsng-streamed-recognition.mjs';
 
 const chromosome = 'X';
 const start = 1_000_000; // 1-based, inclusive
@@ -70,6 +71,8 @@ const output=createWriteStream(fastaPath);
 gzip.pipe(output);
 const hash=createHash('sha256');
 const accumulator=createGenomeAccumulator({maxBases:length,windowSize:15});
+// Locked before the first integrated human-reference run. See docs/real-human-10m-recognition-preregistration.md
+const assay=createStreamedRecognitionAssay({motif:'ACGTTGCACTAGTCA',controls:32,seed:1729,maxBases:length});
 const chunks=[];
 const retrievedAt = new Date().toISOString();
 const header = `>BSNG|reference=GRCh38|species=homo_sapiens|region=${region}|source=Ensembl_REST\n`;
@@ -80,6 +83,7 @@ for (let from = start; from <= end; from += chunkSize) {
   const {sequence,referenceId,url}=await ensemblChunk(from,to);
   hash.update(sequence,'ascii');
   accumulator.addChunk(sequence);
+  assay.addChunk(sequence);
   chunks.push({
     from,to,referenceId,sourceUrl:url,
     bases:sequence.length,
@@ -95,7 +99,10 @@ for (let from = start; from <= end; from += chunkSize) {
 gzip.end();
 await finished(output);
 const summary=accumulator.summary();
-if (summary.length !== length || summary.chunksProcessed !== 10 ||
+const recognition=assay.summary();
+if (summary.length !== length || recognition.sequenceLength !== length ||
+    summary.nucleotideCounts.N !== recognition.ambiguousBases ||
+    summary.chunksProcessed !== recognition.chunkCount || summary.chunksProcessed !== 10 ||
     summary.windowsExamined + summary.windowsExcludedAmbiguous !== length-14) {
   throw Error('Final completeness or sliding-window checks failed.');
 }
@@ -103,7 +110,7 @@ if (summary.length !== length || summary.chunksProcessed !== 10 ||
 const report={
   schemaVersion:1,
   evidenceType:'REAL_PUBLIC_HUMAN_REFERENCE_SEQUENCE_ANALYSIS',
-  analysisType:'GENOMIC_COMPOSITION_ONLY_NOT_NANITE_BINDING',
+  analysisType:'REFERENCE_GENOMIC_COMPOSITION_AND_HYPOTHETICAL_SEQUENCE_RECOGNITION_ONLY',
   species:'Homo sapiens',
   source:'Ensembl REST',
   assembly:'GRCh38',
@@ -118,12 +125,29 @@ const report={
   fastaGzipFile:fastaPath,
   chunks,
   results:summary,
-  hypothesisStatus:'NO_BIOLOGICAL_NANITE_INTERACTION_ASSAY_PERFORMED',
-  interpretation:'Real human reference DNA with reproducible GC/window measurements. Not an experimental nanite-binding result.',
+  hypothesisAssay:{
+    ...recognition,
+    preregistration:'docs/real-human-10m-recognition-preregistration.md',
+    sequenceSha256:null,
+    firstObservedGRCh38Coordinates1Based:recognition.firstObservedPositions0Based.map(p => start+p),
+  },
+  hypothesisStatus:'ONLY_HYPOTHETICAL_SEQUENCE_PATTERN_TEST_PERFORMED_NO_PHYSICAL_NANITE_BINDING',
+  interpretation:'Authentic human reference DNA was compared against a preselected hypothetical recognition motif and sequence-composition-matched negative controls. Exact sequence matches, or their absence, are NOT measurements of physical BSNG nanite binding.',
 };
+report.hypothesisAssay.sequenceSha256=report.fullSequenceSha256;
 await writeFile('artifacts/GRCh38-chrX-10M-report.json',JSON.stringify(report,null,2)+'\n');
+await writeFile('artifacts/GRCh38-chrX-10M-hypothesis-assay.json', JSON.stringify({
+  referenceRegion:report.referenceRegion,
+  fullSequenceSha256:report.fullSequenceSha256,
+  sourceCodeRevision:report.sourceCodeRevision,
+  ...report.hypothesisAssay,
+},null,2)+'\n');
 console.log('REAL HUMAN REFERENCE ANALYSIS COMPLETE',JSON.stringify({
   length:summary.length,fullSequenceSha256:report.fullSequenceSha256,
   gcFraction:summary.gcFraction,ambiguousBases:summary.nucleotideCounts.N,
+  recognitionMotif:recognition.parameters.motif,
+  observedExactMatches:recognition.observedMatchCount,
+  controlCounts:recognition.decoyMatchCounts,
+  empiricalSequenceMatchTail:recognition.empiricalEnrichmentP,
   fastaGzipFile:fastaPath,
 }));
