@@ -166,7 +166,7 @@ function AppBody() {
       {para('Do not add identifiable human genomic data or API keys to this prototype. No network data submission or permanent notes storage is provided.')}
     </Box>
   </>;}
-  const screens:Record<Page,()=>React.ReactNode>={overview,scan,research:()=> <ResearchScreen sequence={sequence} setSequence={setSequence} sampleName={sampleName} onOpenResults={analyze}/>,nanite,results,notes:notesPage,settings};
+  const screens:Record<Page,()=>React.ReactNode>={overview,scan,research:()=> <ResearchScreen sequence={sequence} setSequence={setSequence} sampleName={sampleName} setSampleName={setSampleName} onOpenResults={analyze}/>,nanite,results,notes:notesPage,settings};
   return <SafeAreaView style={s.safe} edges={['top','left','right','bottom']}>
     <StatusBar barStyle="light-content" backgroundColor={colors.bg}/>
     <View style={s.header}>
