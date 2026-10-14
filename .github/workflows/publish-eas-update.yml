@@ -1,0 +1,52 @@
+name: Publish BSNG Android OTA update
+
+on:
+  workflow_dispatch:
+    inputs:
+      message:
+        description: "Short description of this approved update"
+        required: false
+        default: "BSNG Studio research interface update"
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  publish_preview_update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      CI: "true"
+      EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+      PUBLISH_MESSAGE: ${{ inputs.message }}
+    steps:
+      - name: Confirm Expo authentication is configured
+        shell: bash
+        run: |
+          if [ -z "$EXPO_TOKEN" ]; then
+            echo "::error::Add EXPO_TOKEN to GitHub Actions repository secrets first."
+            exit 1
+          fi
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install and validate
+        run: |
+          npm install --no-audit --no-fund
+          npm run check
+          npm test
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - name: Generate local assets
+        run: |
+          python -m pip install Pillow==11.3.0
+          python scripts/generate_assets.py
+      - uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+      - name: Publish compatible Android JS update to preview channel
+        run: eas update --channel preview --platform android --message "$PUBLISH_MESSAGE" --non-interactive
