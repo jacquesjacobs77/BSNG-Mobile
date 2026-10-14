@@ -49,9 +49,20 @@ jobs:
           python scripts/generate_assets.py
       - name: Generate Android project
         run: npx expo prebuild --platform android --non-interactive --no-install
+      - name: Configure Gradle memory for Expo updates
+        run: |
+          # Expo's generated default Metaspace cap was exhausted during app:packageRelease.
+          # Limit concurrent workers and move Kotlin compilation into the Gradle process.
+          cat >> android/gradle.properties <<'EOF'
+          org.gradle.jvmargs=-Xmx2560m -XX:MaxMetaspaceSize=1536m -Dfile.encoding=UTF-8
+          org.gradle.workers.max=2
+          org.gradle.parallel=false
+          kotlin.compiler.execution.strategy=in-process
+          EOF
+          grep -E 'org.gradle.jvmargs|org.gradle.workers.max|org.gradle.parallel|kotlin.compiler.execution.strategy' android/gradle.properties | tail -n 4
       - name: Compile installable APK
         working-directory: android
-        run: ./gradlew assembleRelease --no-daemon
+        run: ./gradlew assembleRelease --no-daemon --max-workers=2 --no-parallel
       - name: Upload prototype APK
         uses: actions/upload-artifact@v4
         with:
