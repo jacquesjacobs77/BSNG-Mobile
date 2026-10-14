@@ -1,0 +1,90 @@
+{
+  "documentVersion": 1,
+  "title": "BSNG exploratory human-reference 10M exact-sequence recognition screen",
+  "resultClass": "NEGATIVE_NONDISCRIMINATING_COMPUTATIONAL_FINDING",
+  "evidenceTier": "IN_SILICO_SEQUENCE_MATCH_ONLY",
+  "biologicalBindingEvidence": false,
+  "experimentalNaniteEvidence": false,
+  "run": {
+    "platform": "GitHub Actions",
+    "runId": 38640324650,
+    "runUrl": "https://github.com/jacquesjacobs77/BSNG-Mobile/actions/runs/38640324650",
+    "conclusion": "success",
+    "sourceCommit": "41f612579fc8c971038586488d35d0ef26e88fe6",
+    "regressionChecksPassed": 19,
+    "regressionChecksFailed": 0,
+    "sourceReportArtifact": "BSNG-human-GRCh38-10M-recognition-screen",
+    "artifactRetentionDays": 30
+  },
+  "data": {
+    "source": "Ensembl REST",
+    "species": "Homo sapiens",
+    "genomeAssembly": "GRCh38",
+    "chromosome": "X",
+    "region1BasedInclusive": {
+      "start": 1000000,
+      "end": 10999999
+    },
+    "basesRetrieved": 10000000,
+    "chunksRetrieved": 10,
+    "basesPerChunk": 1000000,
+    "SHA256OfExactConcatenatedUppercaseBases": "5bc91fa875ca7c069548838d1fef58a32d527d59211fb28c74331e1369f71953",
+    "ambiguousBasesN": 183749,
+    "fractionGCAcrossUnambiguousBases": 0.41581740320209826
+  },
+  "preregisteredModel": {
+    "assumptions": "Exact 15bp sequence recognition of either strand; no mismatches; no physical binding mechanism specified.",
+    "motif": "ACGTTGCACTAGTCA",
+    "motifOrigin": "Earlier arbitrary synthetic software-regression fixture; not a biological target",
+    "controlMethod": "32 independently seeded shuffled 15mers preserving A/C/G/T counts, reverse-complement distinct",
+    "controlCount": 32,
+    "seed": 1729,
+    "protocol": "docs/real-human-10m-recognition-preregistration.md"
+  },
+  "results": {
+    "observedExactMotifMatches": 0,
+    "allControlMotifMatchCounts": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "empiricalSequenceMatchTail": 1,
+    "conclusion": "No exact 15bp target matches, and no exact matches for controls. This interval does not discriminate target from control strings. The computation provides no nanite binding evidence."
+  },
+  "limitations": [
+    "The analyzed GRCh38 reference is not a personal genome sample.",
+    "The tested motif is not derived from a characterized BSNG receptor.",
+    "No molecular, cellular, therapeutic, ATP-energy or replicative construct was modeled or measured.",
+    "All-zero counts make the control comparison uninformative; p=1 is not a validation or physical failure of the BSNG hypothesis.",
+    "Full report/FASTA are currently stored in an expiring GitHub artifact; this summary file is persisted on the development branch."
+  ]
+}
