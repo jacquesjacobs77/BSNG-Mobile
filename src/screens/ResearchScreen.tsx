@@ -1,10 +1,10 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Text, TextInput, TouchableOpacity, View, useWindowDimensions, StyleSheet } from 'react-native';
 import Svg, { Circle, Defs, LinearGradient, Line, Path, Polyline, Rect, Stop } from 'react-native-svg';
 import { analyzeSequence, normalizeSequence, SAMPLE_SEQUENCE, DEMO_MAX_BASES, type SequenceSummary } from '../lib/sequence';
 
 const C={bg:'#070E1B',panel:'#0C1A2A',panel2:'#0B2133',edge:'#28506A',cyan:'#53E3E0',blue:'#64AFFF',violet:'#AA82FF',green:'#70DCB0',muted:'#96AEC3',white:'#E6F7FF',amber:'#FFCC83'};
-type Props={sequence:string;setSequence:(value:string)=>void;sampleName:string;onOpenResults:()=>void};
+type Props={sequence:string;setSequence:(value:string)=>void;sampleName:string;setSampleName:(value:string)=>void;onOpenResults:()=>void};
 const pct=(f:number)=>(f*100).toFixed(1)+'%';
 function Panel({children,style}:{children:React.ReactNode;style?:object}){return <View style={[s.panel,style]}>{children}</View>;}
 function Caption({children}:{children:React.ReactNode}){return <Text style={s.caption}>{children}</Text>;}
@@ -55,7 +55,40 @@ function Gauge({fraction,label}:{fraction:number;label:string}){
     </View><Text style={s.mini}>{label}</Text>
   </View>;
 }
-export default function ResearchScreen({sequence,setSequence,sampleName,onOpenResults}:Props){
+export default function ResearchScreen({sequence,setSequence,sampleName,setSampleName,onOpenResults}:Props){
+  const [referenceRegion,setReferenceRegion]=useState('X:1000000..1000092:1');
+  const [referenceState,setReferenceState]=useState('Demo/manual input · not a fetched reference');
+  const [referenceLoading,setReferenceLoading]=useState(false);
+  async function loadPublicReference(){
+    const region=referenceRegion.trim().toUpperCase();
+    const match=region.match(/^(?:[1-9]|1\d|2[0-2]|X|Y|MT):(\d+)\.\.(\d+)(?::(?:1|-1))?$/);
+    if(!match){setReferenceState('Invalid coordinate. Example: X:1000000..1000092:1');return;}
+    const start=Number(match[1]),end=Number(match[2]);
+    if(!Number.isSafeInteger(start)||!Number.isSafeInteger(end)||start<1||end<start||end-start+1>DEMO_MAX_BASES||end-start+1<15){
+      setReferenceState('Choose a valid genomic span between 15 and 5,000 bases.');return;
+    }
+    setReferenceLoading(true);
+    setReferenceState('Contacting Ensembl REST...');
+    const controller=new AbortController();
+    const timeout=setTimeout(()=>controller.abort(),15000);
+    try{
+      const url='https://rest.ensembl.org/sequence/region/human/'+encodeURIComponent(region)+'?content-type=application%2Fjson';
+      const response=await fetch(url,{headers:{Accept:'application/json'},signal:controller.signal});
+      if(!response.ok) throw new Error('Ensembl response '+response.status);
+      const raw:unknown=await response.json();
+      if(typeof raw!=='object'||raw===null)throw new Error('Unexpected Ensembl response');
+      const item=raw as {seq?:unknown;id?:unknown};
+      if(typeof item.seq!=='string')throw new Error('Missing sequence from Ensembl');
+      const bases=normalizeSequence(item.seq);
+      if(bases.length!==end-start+1||/[^ACGT]/.test(bases))throw new Error('Reference includes unsupported bases or unexpected length');
+      setSequence(bases);
+      setSampleName('Ensembl human reference · '+region);
+      setReferenceState('FETCHED FROM ENSEMBL · '+(typeof item.id==='string'?item.id:region)+' · '+new Date().toISOString());
+    }catch(e){
+      setReferenceState('REFERENCE NOT LOADED: '+(e instanceof Error?e.message:'Network error'));
+    }finally{clearTimeout(timeout);setReferenceLoading(false);}
+  }
+
   const {width}=useWindowDimensions();
   const usable=width>=720?Math.min(980,width-280):width-38;
   const wide=usable>=690;
@@ -102,15 +135,24 @@ export default function ResearchScreen({sequence,setSequence,sampleName,onOpenRe
     </Panel>
     <Panel><Caption>LOCAL SEQUENCE INPUT</Caption>
       <TextInput accessibilityLabel="DNA sequence research input" multiline autoCorrect={false} autoCapitalize="characters" value={sequence}
-        onChangeText={setSequence} style={s.input} placeholder="Enter A/C/G/T bases" placeholderTextColor={C.muted} maxLength={DEMO_MAX_BASES+50}/>
+        onChangeText={text=>{setSequence(text);setSampleName('Manual sequence input');setReferenceState('Manual input · locally calculated');}} style={s.input} placeholder="Enter A/C/G/T bases" placeholderTextColor={C.muted} maxLength={DEMO_MAX_BASES+50}/>
       <Text style={[s.mini,{marginTop:8}]}>{cleaned.length+' / '+DEMO_MAX_BASES+' bases • '+(state.error||'Live composition calculation ready')}</Text>
       <View style={{flexDirection:'row',gap:9,marginTop:14,flexWrap:'wrap'}}>
         <TouchableOpacity style={[s.button,{flex:1}]} onPress={onOpenResults}><Text style={s.action}>OPEN FULL REPORT →</Text></TouchableOpacity>
-        <TouchableOpacity style={[s.button,{backgroundColor:'#183346',flex:1}]} onPress={()=>setSequence(SAMPLE_SEQUENCE)}><Text style={[s.action,{color:C.cyan}]}>LOAD DEMO</Text></TouchableOpacity>
+        <TouchableOpacity style={[s.button,{backgroundColor:'#183346',flex:1}]} onPress={()=>{setSequence(SAMPLE_SEQUENCE);setSampleName('Built-in sequence demo');setReferenceState('Bundled demonstration sequence');}}><Text style={[s.action,{color:C.cyan}]}>LOAD DEMO</Text></TouchableOpacity>
       </View>
     </Panel>
+    <Panel><Caption>PUBLIC REFERENCE DNA — ENSEMBL REST</Caption>
+      <Text style={s.muted}>Fetch a short human reference-genome region over the network (15–5,000 bp). This is published reference data, not a live instrument feed or an individual's DNA.</Text>
+      <TextInput accessibilityLabel="Human reference genome coordinate" value={referenceRegion} onChangeText={setReferenceRegion} autoCapitalize="characters" autoCorrect={false} style={s.input} placeholder="X:1000000..1000092:1" placeholderTextColor={C.muted}/>
+      <TouchableOpacity style={[s.button,{marginTop:12}]} disabled={referenceLoading} onPress={loadPublicReference}>
+        <Text style={s.action}>{referenceLoading?'LOADING REFERENCE...':'FETCH REAL REFERENCE SEQUENCE'}</Text>
+      </TouchableOpacity>
+      <Text selectable style={[s.mini,{marginTop:9,lineHeight:17}]}>{referenceState}</Text>
+      <Text style={s.mini}>Source: rest.ensembl.org · assembly and release follow Ensembl's current service metadata.</Text>
+    </Panel>
     <Panel><Caption>INTERPRETATION AND DATA PROVENANCE</Caption>
-      <Text style={s.muted}>All measurements above are calculated directly on this device from the sequence field. No live laboratory instrument, external genomic feed, gene-expression assay, nanite model or AI service is connected. The DNA graphic is illustrative. GC composition alone does not establish binding, compatibility or therapeutic effects.</Text>
+      <Text style={s.muted}>Measurements above are calculated on-device from the current sequence. Input may be manual, demo, or a fetched public reference. No live laboratory instrument, gene-expression assay, nanite model or AI service is connected. The DNA graphic is illustrative. GC composition alone does not establish binding, compatibility or therapeutic effects.</Text>
     </Panel>
   </View>;
 }
