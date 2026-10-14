@@ -1,0 +1,25 @@
+name: BSNG 10M streaming engine checks
+on:
+  push:
+    branches:
+      - feature/bsng-10m-stream-v0.3
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  genome_stream:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install and typecheck
+        run: |
+          npm install --no-audit --no-fund
+          npm run check
+      - name: Test all sequence and genome streaming cases
+        run: npm test
