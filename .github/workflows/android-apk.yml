@@ -51,15 +51,31 @@ jobs:
         run: npx expo prebuild --platform android --non-interactive --no-install
       - name: Configure Gradle memory for Expo updates
         run: |
-          # Expo's generated default Metaspace cap was exhausted during app:packageRelease.
-          # Limit concurrent workers and move Kotlin compilation into the Gradle process.
-          cat >> android/gradle.properties <<'EOF'
-          org.gradle.jvmargs=-Xmx2560m -XX:MaxMetaspaceSize=1536m -Dfile.encoding=UTF-8
-          org.gradle.workers.max=2
-          org.gradle.parallel=false
-          kotlin.compiler.execution.strategy=in-process
-          EOF
-          grep -E 'org.gradle.jvmargs|org.gradle.workers.max|org.gradle.parallel|kotlin.compiler.execution.strategy' android/gradle.properties | tail -n 4
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('android/gradle.properties')
+          raw = p.read_text(encoding='utf-8')
+          # Some Expo-generated files do not end with a newline. Appending to the
+          # last property without one corrupts it and causes confusing Node errors.
+          settings = {
+              'org.gradle.jvmargs': '-Xmx2560m -XX:MaxMetaspaceSize=1536m -Dfile.encoding=UTF-8',
+              'org.gradle.workers.max': '2',
+              'org.gradle.parallel': 'false',
+              'kotlin.compiler.execution.strategy': 'in-process',
+          }
+          lines = [
+              line for line in raw.splitlines()
+              if not any(line.strip().startswith(key + '=') for key in settings)
+          ]
+          lines.extend(f'{key}={value}' for key, value in settings.items())
+          p.write_text('\\n'.join(lines) + '\\n', encoding='utf-8')
+          revised = p.read_text(encoding='utf-8')
+          assert revised.endswith('\\n')
+          assert 'expo.inlineModules.watchedDirectories=[]org.gradle' not in revised
+          for key, value in settings.items():
+              assert revised.splitlines().count(f'{key}={value}') == 1
+          print('Validated all Gradle JVM and worker settings.')
+          PY
       - name: Compile installable APK
         working-directory: android
         run: ./gradlew assembleRelease --no-daemon --max-workers=2 --no-parallel
