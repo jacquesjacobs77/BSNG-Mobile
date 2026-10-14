@@ -1,0 +1,41 @@
+name: BSNG real human GRCh38 10M analysis
+on:
+  push:
+    branches:
+      - feature/bsng-10m-stream-v0.3
+    paths:
+      - scripts/analyze_real_ensembl_10m.mjs
+      - .github/workflows/bsng-real-human-10m.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: bsng-public-human-10m
+  cancel-in-progress: false
+
+jobs:
+  analyze-human-reference:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install packages and check code
+        run: |
+          npm ci --no-audit --no-fund
+          npm test
+      - name: Retrieve real Ensembl GRCh38 reference and analyze 10M bases
+        run: node scripts/analyze_real_ensembl_10m.mjs
+      - name: Export complete audit metadata and compressed real reference FASTA
+        uses: actions/upload-artifact@v4
+        with:
+          name: BSNG-GRCh38-chrX-real-human-10M
+          path: |
+            artifacts/GRCh38-chrX-10M-report.json
+            artifacts/GRCh38-chrX-1000000-10999999-10M.fa.gz
+          retention-days: 30
+          if-no-files-found: error
