@@ -26,7 +26,7 @@ jobs:
           node-version: '22'
       - name: Install packages and check code
         run: |
-          npm ci --no-audit --no-fund
+          npm install --no-audit --no-fund
           npm test
       - name: Retrieve real Ensembl GRCh38 reference and analyze 10M bases
         run: node scripts/analyze_real_ensembl_10m.mjs
