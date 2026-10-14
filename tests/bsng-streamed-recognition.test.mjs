@@ -38,14 +38,14 @@ test('scanning is invariant across irregular chunk boundaries',()=>{
 });
 
 test('matches can overlap and span chunk boundaries without duplication',()=>{
-  const target='A'.repeat(15);
+  const target='ACACACACACACACA';
   const assay=createStreamedRecognitionAssay({motif:target,controls:1,seed:1729});
-  // 16 A's has two overlapping windows, one crosses the split
-  assay.addChunk('AAAAAAA');
-  assay.addChunk('AAAAAAAAA');
+  // A 17-base alternating sequence has two overlapping 15-base windows.
+  assay.addChunk('ACACA');
+  assay.addChunk('CACACACACACA');
   const report=assay.summary();
   assert.equal(report.observedMatchCount,2);
-  assert.deepEqual(report.firstObservedPositions0Based,[0,1]);
+  assert.deepEqual(report.firstObservedPositions0Based,[0,2]);
 });
 
 test('a negative result is preserved, not misrepresented as evidence of binding',()=>{
