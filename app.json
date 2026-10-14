@@ -1,0 +1,22 @@
+{
+  "expo": {
+    "name": "BSNG Research Studio",
+    "slug": "bsng-research-studio",
+    "version": "0.1.0",
+    "orientation": "default",
+    "userInterfaceStyle": "dark",
+    "backgroundColor": "#070E1B",
+    "android": {
+      "package": "za.jastudio.bsngresearch",
+      "versionCode": 1,
+      "edgeToEdgeEnabled": true
+    },
+    "ios": {
+      "supportsTablet": true
+    },
+    "newArchEnabled": true,
+    "extra": {
+      "aiIntegration": "not-configured"
+    }
+  }
+}
