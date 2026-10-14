@@ -101,7 +101,7 @@ export default function ResearchScreen({sequence,setSequence,sampleName,setSampl
   const gc=state.result?.gcFraction??0;
   const signal=state.result?.plotFractions??[];
   return <View style={{paddingBottom:15}}>
-    <View style={s.top}><View style={{flex:1}}><Text style={s.over}>RESEARCH CONSOLE / V0.2</Text>
+    <View style={s.top}><View style={{flex:1}}><Text style={s.over}>RESEARCH CONSOLE / V0.2 · OTA TEST 01</Text>
       <Text style={s.title}>Genomic Signal Analysis</Text><Text style={s.sub}>Real-time local DNA composition · scientific research sandbox</Text></View>
       <View style={s.live}><View style={s.dot}/><Text style={{color:C.green,fontWeight:'900',fontSize:10}}>LIVE INPUT</Text></View>
     </View>
