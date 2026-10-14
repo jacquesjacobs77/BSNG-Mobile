@@ -49,7 +49,7 @@ function Gauge({fraction,label}:{fraction:number;label:string}){
   return <View style={{alignItems:'center',minWidth:94,flex:1}}>
     <View style={{width:85,height:85,alignItems:'center',justifyContent:'center'}}>
       <Svg width={85} height={85} viewBox="0 0 100 100"><Circle cx="50" cy="50" r={r} fill="none" stroke="#244258" strokeWidth="9"/>
-        <Circle cx="50" cy="50" r={r} fill="none" stroke={C.cyan} strokeWidth="9" strokeDasharray={circ} strokeDashoffset={circ*(1-fraction)} strokeLinecap="round" rotation="-90" origin="50,50"/>
+        <Circle cx="50" cy="50" r={r} fill="none" stroke={C.cyan} strokeWidth="9" strokeDasharray={`${circ} ${circ}`} strokeDashoffset={circ*(1-fraction)} strokeLinecap="round" rotation="-90" origin="50,50"/>
       </Svg>
       <Text style={{position:'absolute',fontSize:15,color:C.white,fontWeight:'900'}}>{pct(fraction)}</Text>
     </View><Text style={s.mini}>{label}</Text>
@@ -93,7 +93,7 @@ export default function ResearchScreen({sequence,setSequence,sampleName,onOpenRe
       </Panel>
       <Panel style={{flex:1}}>
         <Caption>NUCLEOTIDE COMPOSITION</Caption>
-        {(['A','C','G','T'] as const).map(b=><View key={b} style={s.barRow}><Text style={[s.barName,{color:b==='A'?C.blue:b==='C'?C.violet:b==='G'?C.cyan:C.green}]}>{b}</Text><View style={s.track}><View style={{height:10,width:(cleaned.length?counts[b]/cleaned.length:0)*100+'%',borderRadius:8,backgroundColor:b==='A'?C.blue:b==='C'?C.violet:b==='G'?C.cyan:C.green}}/></View><Text style={s.barValue}>{counts[b]}</Text></View>)}
+        {(['A','C','G','T'] as const).map(b=><View key={b} style={s.barRow}><Text style={[s.barName,{color:b==='A'?C.blue:b==='C'?C.violet:b==='G'?C.cyan:C.green}]}>{b}</Text><View style={s.track}><View style={{height:10,width:`${Math.round((cleaned.length?counts[b]/cleaned.length:0)*100)}%` as `${number}%`,borderRadius:8,backgroundColor:b==='A'?C.blue:b==='C'?C.violet:b==='G'?C.cyan:C.green}}/></View><Text style={s.barValue}>{counts[b]}</Text></View>)}
       </Panel>
     </View>
     <Panel><Caption>LIVE SEQUENCE READS — FIRST 120 BASES</Caption>
