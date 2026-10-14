@@ -68,9 +68,9 @@ jobs:
               if not any(line.strip().startswith(key + '=') for key in settings)
           ]
           lines.extend(f'{key}={value}' for key, value in settings.items())
-          p.write_text('\\n'.join(lines) + '\\n', encoding='utf-8')
+          p.write_text(chr(10).join(lines) + chr(10), encoding='utf-8')
           revised = p.read_text(encoding='utf-8')
-          assert revised.endswith('\\n')
+          assert revised.endswith(chr(10))
           assert 'expo.inlineModules.watchedDirectories=[]org.gradle' not in revised
           for key, value in settings.items():
               assert revised.splitlines().count(f'{key}={value}') == 1
