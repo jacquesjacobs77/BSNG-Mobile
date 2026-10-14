@@ -1,0 +1,50 @@
+name: Android prototype APK
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "App.tsx"
+      - "src/**"
+      - "app.json"
+      - "package*.json"
+      - "index.js"
+      - ".github/workflows/android-apk.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    env:
+      CI: "true"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: android-actions/setup-android@v3
+      - name: Install packages
+        run: npm install --no-audit --no-fund
+      - name: Check TypeScript
+        run: npm run check
+      - name: Test local GC demo
+        run: npm test
+      - name: Generate Android project
+        run: npx expo prebuild --platform android --non-interactive --no-install
+      - name: Compile installable APK
+        working-directory: android
+        run: ./gradlew assembleRelease --no-daemon
+      - name: Upload prototype APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: BSNG-Research-Studio-v0.1-prototype-APK
+          path: android/app/build/outputs/apk/release/app-release.apk
+          if-no-files-found: error
+          retention-days: 30
