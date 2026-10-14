@@ -9,6 +9,7 @@ on:
       - "app.json"
       - "package*.json"
       - "index.js"
+      - "scripts/**"
       - ".github/workflows/android-apk.yml"
 
 permissions:
@@ -39,6 +40,13 @@ jobs:
         run: npm run check
       - name: Test local GC demo
         run: npm test
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - name: Generate Android launcher icons
+        run: |
+          python -m pip install pillow==11.3.0
+          python scripts/generate_assets.py
       - name: Generate Android project
         run: npx expo prebuild --platform android --non-interactive --no-install
       - name: Compile installable APK
@@ -47,7 +55,7 @@ jobs:
       - name: Upload prototype APK
         uses: actions/upload-artifact@v4
         with:
-          name: BSNG-Research-Studio-v0.1-prototype-APK
+          name: BSNG-Research-Studio-v0.2-prototype-APK
           path: android/app/build/outputs/apk/release/app-release.apk
           if-no-files-found: error
           retention-days: 30
