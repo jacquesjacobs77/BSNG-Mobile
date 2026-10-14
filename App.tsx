@@ -2,12 +2,13 @@ import React, { useState } from 'react';
 import { Alert, ScrollView, Share, StatusBar, StyleSheet, Text, TextInput, TouchableOpacity, View, useWindowDimensions } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { analyzeSequence, normalizeSequence, SAMPLE_SEQUENCE, DEMO_MAX_BASES, type SequenceSummary } from './src/lib/sequence';
+import ResearchScreen from './src/screens/ResearchScreen';
 
-type Page = 'overview' | 'scan' | 'nanite' | 'results' | 'notes' | 'settings';
+type Page = 'overview' | 'scan' | 'research' | 'nanite' | 'results' | 'notes' | 'settings';
 type Note = { id: number; title: string; body: string };
 const colors = { bg:'#070E1B', panel:'#101C2C', border:'#284158', cyan:'#56E8E3', purple:'#AF90FF', green:'#75DAAF', amber:'#F9C878', white:'#E9F5FC', muted:'#94AABF' };
 const menu: {id:Page;label:string;glyph:string}[] = [
-  {id:'overview',label:'Overview',glyph:'⌂'}, {id:'scan',label:'Sequence',glyph:'⌁'}, {id:'nanite',label:'Nanite',glyph:'⬡'},
+  {id:'overview',label:'Overview',glyph:'⌂'}, {id:'scan',label:'Sequence',glyph:'⌁'}, {id:'research',label:'Research',glyph:'◈'}, {id:'nanite',label:'Nanite',glyph:'⬡'},
   {id:'results',label:'Results',glyph:'▥'}, {id:'notes',label:'Notes',glyph:'✎'}, {id:'settings',label:'Settings',glyph:'⚙'}
 ];
 const para = (text:string) => <Text style={s.para}>{text}</Text>;
@@ -60,7 +61,7 @@ function AppBody() {
     </TouchableOpacity>;
   }
   function overview() {return <>
-    <Title eyebrow="research console / v0.1" title="BSNG Research Studio" detail="BioSynaptic NanoGenesis — responsive scientific workspace prototype."/>
+    <Title eyebrow="research console / v0.2" title="BSNG Research Studio" detail="BioSynaptic NanoGenesis — responsive scientific workspace prototype."/>
     <Box><Tag text="UI PROTOTYPE"/><Text style={s.big}>Explore. Model. Evaluate.</Text>
       {para('An interface for biological sequence analysis, computational hypotheses, research notes and reproducible results.')}
       <View style={s.tags}><Tag text="LOCAL GC DEMO" color={colors.green}/><Tag text="AI NOT CONNECTED" color={colors.amber}/></View>
@@ -72,6 +73,7 @@ function AppBody() {
     <Text style={s.eyebrow}>WORKSPACES</Text>
     <View style={s.grid}>
       {quick('⌁','Sequence analysis','Run local GC demonstration','scan')}
+      {quick('◈','Research lab','Live-input genomic signal dashboard','research')}
       {quick('⬡','Nanite hypotheses','Explore research categories','nanite')}
       {quick('▥','Results','Examine and share a report','results')}
       {quick('✎','Lab notebook','Record session observations','notes')}
@@ -149,7 +151,7 @@ function AppBody() {
   function settings(){return <>
     <Title eyebrow="system status" title="Settings" detail="Project capabilities and planned research integrations."/>
     <Box>
-      <Text style={s.cardTitle}>BSNG Studio v0.1</Text>
+      <Text style={s.cardTitle}>BSNG Studio v0.2</Text>
       {para('Orientation: automatic ('+(width>height?'landscape':'portrait')+')')}
       {para('Local GC demo: active')}
       {para('JASTUDIO AI Brain: not connected')}
@@ -164,7 +166,7 @@ function AppBody() {
       {para('Do not add identifiable human genomic data or API keys to this prototype. No network data submission or permanent notes storage is provided.')}
     </Box>
   </>;}
-  const screens:Record<Page,()=>React.ReactNode>={overview,scan,nanite,results,notes:notesPage,settings};
+  const screens:Record<Page,()=>React.ReactNode>={overview,scan,research:()=> <ResearchScreen sequence={sequence} setSequence={setSequence} sampleName={sampleName} onOpenResults={analyze}/>,nanite,results,notes:notesPage,settings};
   return <SafeAreaView style={s.safe} edges={['top','left','right','bottom']}>
     <StatusBar barStyle="light-content" backgroundColor={colors.bg}/>
     <View style={s.header}>
@@ -182,7 +184,7 @@ function AppBody() {
       </View>}
       <ScrollView style={{flex:1}} keyboardShouldPersistTaps="handled" contentContainerStyle={s.scroll}>
         <View style={{width:'100%',maxWidth:980,alignSelf:'center'}}>{screens[page]()}
-          <Text style={[s.dim,{textAlign:'center',marginTop:25}]}>BSNG / RESEARCH SANDBOX • v0.1</Text>
+          <Text style={[s.dim,{textAlign:'center',marginTop:25}]}>BSNG / RESEARCH SANDBOX • v0.2</Text>
         </View>
       </ScrollView>
     </View>
