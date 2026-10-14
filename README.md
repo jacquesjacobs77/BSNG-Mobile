@@ -3,7 +3,7 @@
 A mobile-first, responsive Android **research interface prototype** for BioSynaptic NanoGenesis. This is a separate Expo / React Native app shell intended to grow around the BSNG desktop simulation engine. It takes visual inspiration from existing BSNG tablet schematics and architectural inspiration from JASTUDIO AI Brain.
 
 ## Current features
-- Dedicated **Research** workspace inspired by futuristic genomic dashboards: a symbolic DNA helix and on-device live-input visualizations for GC signal, nucleotide counts, and sequence reads.
+- Dedicated **Research** workspace inspired by futuristic genomic dashboards: a symbolic DNA helix and on-device live-input visualizations for GC signal, nucleotide counts, and sequence reads. Includes an optional **Ensembl public human reference-region fetch** (15–5,000 bp) with source label and download timestamp.
 - Branded **BSNG Studio** Android launcher icon and short home-screen name (icons are generated before native prebuild).
 - Dark navy/cyan/violet research dashboard and workspace navigation.
 - Automatic portrait / landscape layout reflow. Narrow phones use a bottom navigation strip; wide screens use a left sidebar.
@@ -12,7 +12,7 @@ A mobile-first, responsive Android **research interface prototype** for BioSynap
 - Session notes (not persisted), transparent status for AI, database and genome services.
 - A GitHub Actions workflow to produce an installable Android APK on GitHub-hosted hardware.
 
-**Data distinction:** The Research workspace recalculates real measurements from the sequence entered on the device. It is **not** connected to live lab equipment, human gene-expression data, or the BSNG backend.
+**Data distinction:** The Research workspace recalculates real measurements from the sequence entered on the device. It can optionally fetch public reference DNA from Ensembl REST; this is not live laboratory telemetry, patient DNA, human gene-expression data, or a connection to the BSNG computational backend.
 
 **Not included:** 15-million-bp scanning, resumable jobs, scientific nanite binding calculations, clinical validation, downloaded reference genome, permanent records or connected AI models. The existing desktop source is not replaced or modified. GC score alone **does not** predict nanite binding.
 
@@ -49,3 +49,6 @@ See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md). This public repository must ne
 
 ## Automatic updates (planned, not yet active)
 This APK still requires manual installation. For later JavaScript/visual updates without APK replacement, we intend to configure **Expo EAS Update** after the repository owner creates an Expo account and authorizes the project. This needs a new APK containing `expo-updates`, project ID and update channel before OTA delivery can work. Native upgrades can still require another APK.
+
+## Public-reference query
+Research → Public reference DNA → enter a region, for example `X:1000000..1000092:1` → **Fetch real reference sequence**. This requires internet access. Requests are limited locally to 15–5,000 bases; ambiguous reference bases are rejected rather than silently counted as A/C/G/T. The displayed reference identifier is returned by the API. Source: https://rest.ensembl.org/documentation/info/sequence_region
