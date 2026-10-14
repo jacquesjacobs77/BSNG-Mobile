@@ -1,0 +1,66 @@
+name: BSNG integrated real-human hypothesis screening
+on:
+  push:
+    branches:
+      - feature/bsng-real-genome-assay-v0.3
+    paths:
+      - 'src/lib/bsng-recognition-assay.mjs'
+      - 'src/lib/bsng-streamed-recognition.mjs'
+      - 'src/lib/genome-stream.mjs'
+      - 'scripts/analyze_real_ensembl_10m.mjs'
+      - 'docs/real-human-10m-recognition-preregistration.md'
+      - 'tests/*.test.mjs'
+      - '.github/workflows/bsng-integrated-assay.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: bsng-integrated-real-human-chrx-10m
+  cancel-in-progress: false
+
+jobs:
+  real-human-assay:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install packages and run all independent regression tests
+        run: |
+          npm install --no-audit --no-fund
+          npm run check
+          npm test
+      - name: Read actual human GRCh38 and run pre-registered hypothesis-assumption screen
+        run: node scripts/analyze_real_ensembl_10m.mjs
+      - name: Verify evidence labeling and reproducibility fields
+        run: |
+          node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict';
+          import { readFileSync } from 'node:fs';
+          const r=JSON.parse(readFileSync('artifacts/GRCh38-chrX-10M-report.json','utf8'));
+          assert.equal(r.results.length,10_000_000);
+          assert.equal(r.hypothesisAssay.sequenceLength,10_000_000);
+          assert.equal(r.hypothesisAssay.parameters.motif,'ACGTTGCACTAGTCA');
+          assert.equal(r.hypothesisAssay.parameters.seed,1729);
+          assert.equal(r.hypothesisAssay.decoyMatchCounts.length,32);
+          assert.equal(r.hypothesisAssay.biologicalClaimSupported,false);
+          assert.equal(r.hypothesisAssay.sequenceSha256,r.fullSequenceSha256);
+          assert.equal(r.chunks.length,10);
+          assert.equal(r.sourceCodeRevision,process.env.GITHUB_SHA);
+          console.log('AUDIT VERIFIED: 10,000,000 real human bases, 32 control motifs and recorded negative results.');
+          NODE
+      - name: Publish real human FASTA and independently auditable research reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: BSNG-human-GRCh38-10M-recognition-screen
+          path: |
+            artifacts/GRCh38-chrX-10M-report.json
+            artifacts/GRCh38-chrX-10M-hypothesis-assay.json
+            artifacts/GRCh38-chrX-1000000-10999999-10M.fa.gz
+            docs/real-human-10m-recognition-preregistration.md
+          retention-days: 30
+          if-no-files-found: error
