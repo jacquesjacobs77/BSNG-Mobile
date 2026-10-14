@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "BSNG Studio",
-    "slug": "bsng-research-studio",
+    "slug": "jacques",
     "version": "0.2.0",
     "orientation": "default",
     "userInterfaceStyle": "dark",
@@ -20,8 +20,23 @@
     },
     "newArchEnabled": true,
     "extra": {
-      "aiIntegration": "not-configured"
+      "aiIntegration": "not-configured",
+      "eas": {
+        "projectId": "0169fa50-1d3c-41d9-9109-fc7ae3f58e07"
+      }
     },
-    "icon": "./assets/icon.png"
+    "icon": "./assets/icon.png",
+    "owner": "bsngs-team",
+    "updates": {
+      "url": "https://u.expo.dev/0169fa50-1d3c-41d9-9109-fc7ae3f58e07",
+      "requestHeaders": {
+        "expo-channel-name": "preview"
+      },
+      "checkAutomatically": "ON_LOAD",
+      "fallbackToCacheTimeout": 0
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    }
   }
 }
