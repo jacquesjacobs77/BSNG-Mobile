@@ -1,19 +1,21 @@
 {
   "name": "bsng-research-studio",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "main": "index.js",
   "scripts": {
     "start": "expo start",
     "android": "expo start --android",
     "check": "tsc --noEmit",
-    "test": "node --experimental-strip-types --test tests/*.test.mjs"
+    "test": "node --experimental-strip-types --test tests/*.test.mjs",
+    "assets": "python3 scripts/generate_assets.py"
   },
   "dependencies": {
     "expo": "~57.0.21",
     "react": "19.2.3",
     "react-native": "0.86.0",
-    "react-native-safe-area-context": "^5.6.2"
+    "react-native-safe-area-context": "^5.6.2",
+    "react-native-svg": "15.15.4"
   },
   "devDependencies": {
     "@types/react": "~19.2.0",
