@@ -1,0 +1,89 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-15",
+  "category": "REAL_EXPERIMENTAL_NATURAL_PROTEIN_REFERENCE_BENCHMARK",
+  "status": "SUCCESSFUL_COMPUTATIONAL_BENCHMARK_WITH_LIMITED_EXTERNAL_BIOLOGICAL_EVIDENCE",
+  "title": "CTCF/JASPAR motif scores evaluated against ENCODE CTCF ChIP-seq enrichment on 10M bases of human GRCh38",
+  "study": {
+    "subject": "Human CTCF transcription factor; BSNG nanite remains hypothetical",
+    "preregistration": "docs/ctcf-biological-validation-v0.4.md",
+    "githubRun": "https://github.com/jacquesjacobs77/BSNG-Mobile/actions/runs/38684724899",
+    "executionSourceCommit": "0b2e096e00ffc592c5b79f3a572427528ddff33b",
+    "githubArtifactName": "BSNG-real-human-CTCF-biological-reference",
+    "githubArtifactRetentionDays": 30
+  },
+  "reference": {
+    "organism": "Homo sapiens",
+    "assembly": "GRCh38",
+    "chromosome": "X",
+    "coordinateSystem": "1-based inclusive",
+    "start": 1000000,
+    "end": 10999999,
+    "bases": 10000000,
+    "originalSequenceSha256": "5bc91fa875ca7c069548838d1fef58a32d527d59211fb28c74331e1369f71953",
+    "source": "Ensembl REST reference sequence"
+  },
+  "biologicalModel": {
+    "source": "JASPAR",
+    "molecule": "CTCF",
+    "matrixId": "MA0139.1",
+    "modelType": "Position-frequency-matrix-based log2 odds motif recognition",
+    "matrixUrl": "https://jaspar.elixir.no/matrix/MA0139.1/",
+    "matrixLength": 19,
+    "pseudocount": 0.5,
+    "nucleotideBackground": 0.25,
+    "strandPolicy": "Both forward and reverse complement",
+    "positionalScoreIsPhysicalBindingProbability": false
+  },
+  "experimentalObservations": {
+    "source": "ENCODE",
+    "experiment": "ENCSR000AKO",
+    "sample": "Human K562 cells",
+    "assay": "CTCF ChIP-seq",
+    "file": "ENCFF519CXF",
+    "fileUrl": "https://www.encodeproject.org/files/ENCFF519CXF/",
+    "fileFormat": "BED narrowPeak",
+    "assembly": "GRCh38",
+    "knownReleasedFileMd5": "7828af6ccfcb579226ce54757b98f05b",
+    "observedPeaksInScannedRegion": 88
+  },
+  "benchmark": {
+    "positivesFromPeaks": 88,
+    "matchedNegatives": 88,
+    "seed": 1729,
+    "gcToleranceAbsolute": 0.06,
+    "exclusionDistanceFromObservedPeaksBp": 1000,
+    "maximumScoreWindowFromSummitBp": 100,
+    "aucAgainstGcMatchedBackground": 0.8702221074380165,
+    "pairwiseMatchedWinRate": 0.8977272727272727,
+    "note": "AUC is an exploratory discrimination statistic, not predicted binding probability or calibration."
+  },
+  "topPublishedCandidateExample": {
+    "rank": 1,
+    "targetProtein": "Natural human CTCF",
+    "chromosome": "X",
+    "assembly": "GRCh38",
+    "start1BasedInclusive": 8743317,
+    "end1BasedInclusive": 8743335,
+    "strand": "+",
+    "referenceSequence": "TTGCCAGCAGGGGGCACCA",
+    "pwmLog2OddsScore": 23.535866148651255,
+    "overlapsK562CtcfChIPPeak": true,
+    "isNaniteAttachmentSite": false,
+    "isGenomicSafeHarbor": false
+  },
+  "softwareTests": {
+    "passed": 29,
+    "failed": 0,
+    "completedSuccessfully": true
+  },
+  "limitations": [
+    "CTCF is a natural protein, not an experimentally defined BSNG nanite.",
+    "JASPAR matrix is originally ChIP-seq-derived; true training/validation independence has not been established.",
+    "ChIP-seq enrichment is an observational proxy for occupancy and does not measure individual-molecule binding affinity at each motif.",
+    "K562 is a cancer-derived cell line; results cannot be generalized to healthy tissue without validation.",
+    "Genome annotation and integration safety have not been experimentally validated.",
+    "The full FASTA and measured ENCODE file are GitHub artifacts with 30-day retention; the source URLs/hashes and summary are preserved here.",
+    "No experimental BSNG nanite-binding, replication, ATP utilization, immune compatibility or therapeutic effect is established."
+  ]
+}
