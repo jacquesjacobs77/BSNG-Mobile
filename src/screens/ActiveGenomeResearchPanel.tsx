@@ -9,7 +9,7 @@ type IndexEntry={
 };
 type Catalog={schemaVersion:number;reports:IndexEntry[]};
 type Finding={
- rank:number;chromosome:string;start1BasedInclusive:number;end1BasedInclusive:number;
+ rank:number;chromosome:string|null;start1BasedInclusive:number;end1BasedInclusive:number;
  strand:string;pwmLog2OddsScore:number;referencePlusStrand19:string;
  evidenceStatus:string;measuredBsngBinding:boolean;measuredIntegration:boolean;
 };
@@ -62,6 +62,7 @@ export default function ActiveGenomeResearchPanel(){
  const [history,setHistory]=useState<IndexEntry[]>([]);
  const [report,setReport]=useState<ResearchReport|null>(null);
  const [more,setMore]=useState(false);
+ const [showAllFindings,setShowAllFindings]=useState(false);
 
  const refresh=useCallback(async()=>{
   if(loading)return;
@@ -89,10 +90,18 @@ export default function ActiveGenomeResearchPanel(){
      data.source.sequenceSha256!==entry.sequenceSha256||
      !data.analysis.naturalProteinMotifScreen.allWindowsAccountedFor||
      data.evidence.jointBsngHybridRecognition!=='NOT_ASSESSABLE'||
-     data.evidence.genomicIntegrationFeasibility!=='NOT_ASSESSABLE'){
+     data.evidence.genomicIntegrationFeasibility!=='NOT_ASSESSABLE'||
+     !/^(?:[1-9]|1[0-9]|2[0-2]|X|Y|MT)$/.test(data.source.chromosome)||
+     !Array.isArray(data.analysis.naturalProteinMotifScreen.findings)||
+     data.analysis.naturalProteinMotifScreen.findings.some(site=>
+       (site.chromosome!==null&&site.chromosome!=='chr'+data.source.chromosome)||
+       site.start1BasedInclusive<data.source.start1BasedInclusive||
+       site.end1BasedInclusive>data.source.end1BasedInclusive||
+       site.end1BasedInclusive-site.start1BasedInclusive!==18||
+       !['+','-'].includes(site.strand))){
      throw Error('Research report provenance or scientific status validation failed.');
    }
-   setReport(data);setMore(false);
+   setReport(data);setMore(false);setShowAllFindings(false);
   }catch(err){setError(err instanceof Error?err.message:'Unable to verify this research report.');}
   finally{setBusy(false)}
  }
@@ -119,8 +128,8 @@ export default function ActiveGenomeResearchPanel(){
    'Bases '+report.source.bases,'Full reference SHA256 '+report.source.sequenceSha256,
    'Code '+report.codeCommit,'CTCF model JASPAR MA0139.1',
    'Natural CTCF motif candidates '+report.analysis.naturalProteinMotifScreen.findings.length,
-   ...report.analysis.naturalProteinMotifScreen.findings.slice(0,10).map(x=>
-    '#'+x.rank+' '+x.chromosome+':'+x.start1BasedInclusive+'-'+x.end1BasedInclusive+' '+x.strand+
+   ...report.analysis.naturalProteinMotifScreen.findings.map(x=>
+    '#'+x.rank+' chr'+report.source.chromosome+':'+x.start1BasedInclusive+'-'+x.end1BasedInclusive+' '+x.strand+
     ' PWM log2 odds '+x.pwmLog2OddsScore.toFixed(4)),
    'BSNG hybrid binding: NOT ASSESSABLE; integration: NOT ASSESSABLE.',
    'Public report '+ROOT+'/reports/'+report.runId+'.json',
@@ -177,11 +186,16 @@ export default function ActiveGenomeResearchPanel(){
     <Text style={s.label}>Exact source-sequence SHA-256</Text>
     <Text selectable style={s.mono}>{report.source.sequenceSha256}</Text>
     <Text style={s.help}>Natural CTCF motif model · JASPAR MA0139.1 · maximum PWM log₂ score per 1,000-base bin. These are sequence preference rankings, not experimental affinity or safe insertion sites.</Text>
-    {report.analysis.naturalProteinMotifScreen.findings.slice(0,10).map(x=><View key={x.rank} style={s.finding}>
-      <Text style={s.findingLocation} selectable>{'#'+x.rank+' '+x.chromosome+':'+format(x.start1BasedInclusive)+'–'+format(x.end1BasedInclusive)+' ('+x.strand+')'}</Text>
+    {report.analysis.naturalProteinMotifScreen.findings.slice(0,showAllFindings?undefined:10).map(x=><View key={x.rank} style={s.finding}>
+      <Text style={s.findingLocation} selectable>{'#'+x.rank+' chr'+report.source.chromosome+':'+format(x.start1BasedInclusive)+'–'+format(x.end1BasedInclusive)+' ('+x.strand+')'}</Text>
       <Text selectable style={s.mono}>{x.referencePlusStrand19}</Text>
       <Text style={s.help}>{'CTCF PWM log₂ odds: '+x.pwmLog2OddsScore.toFixed(4)}</Text>
     </View>)}
+    {report.analysis.naturalProteinMotifScreen.findings.length>10&&<TouchableOpacity
+      accessibilityRole="button" onPress={()=>setShowAllFindings(v=>!v)} style={s.secondary}>
+      <Text style={s.secondaryText}>{showAllFindings?'SHOW FIRST 10 OF '+report.analysis.naturalProteinMotifScreen.findings.length:
+        'VIEW ALL '+report.analysis.naturalProteinMotifScreen.findings.length+' RANKED MOTIF FINDINGS'}</Text>
+    </TouchableOpacity>}
     {report.analysis.naturalProteinMotifScreen.findings.length===0&&<Text style={s.help}>No unambiguous motif candidates passed scanning.</Text>}
     <View style={s.caution}>
      <Text style={s.cautionTitle}>BSNG PHYSICAL BINDING · NOT ASSESSABLE</Text>
