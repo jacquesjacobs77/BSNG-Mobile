@@ -11,7 +11,7 @@ The v0.8 development branch implements:
 - Streaming JASPAR MA0139.1 **natural CTCF motif** scoring (plus and minus strand); all windows meeting the fixed *exploratory* score threshold >=15 log₂-odds are archived in compressed NDJSON. This threshold has not been experimentally calibrated; it is not binding probability, a nanite target, or safe integration guidance.
 - SHA-256 of each batch's owned reference bases and archived candidates, explicit N/terminal-unscorable counts, idempotent receipts, atomic progress ledger, fast stop/resume, detection of corruption and duplicate/omitted windows.
 - A single writer lock on one persistent POSIX filesystem; default CLI runs one batch and supports explicit continuous `BSNG_BATCH_BUDGET=all` after a durable host and storage are prepared. GitHub Actions runners are ephemeral and are NOT designated persistent full-genome storage.
-- 57/57 existing + new regression tests and validation against NCBI's official assembly-report data in GitHub CI.
+- 60/60 existing + new regression tests and validation against NCBI's official assembly-report data in GitHub CI.
 
 ## NCBI real assembly-plan results
 Data source: GCF_000001405.40 GRCh38.p14 assembly report; source SHA-256 `64318ddff470b69b261a667d813210044f60d4ce654253a547db80ff73638d38`.
@@ -24,7 +24,7 @@ Deterministic plan SHA-256 `22c67ad85730b19c97725ddf913b41d6749b7169b880a5af6724
 | C: RefSeq ALT/patch | 514 | 198,973,029 | 514 |
 | **RefSeq GCF scope** | **705** | **3,298,430,636** | **1,003** |
 
-**CRITICAL SOURCE GAP:** four official assembly-report rows totaling 481,426 bases have GenBank accessions but `na` RefSeq accessions (two additional Primary Assembly unlocalized/unplaced representations and one alternate plus one other primary; see manifest). The tool preserves these as `excludedSequences`. A complete GCF RefSeq scan MUST NOT be described as complete coverage of every GRCh38.p14 sequence representation until those four are separately sourced from the appropriate GCA/GenBank dataset and scanned. Also, GCF ALT and patches represent overlapping reference alternatives, not 3.298 billion unique biological bases.
+**CRITICAL SOURCE GAP:** four official assembly-report rows totaling 481,426 bases have GenBank accessions but `na` RefSeq accessions (three Primary Assembly unlocalized/unplaced representations and one alternate; see manifest). The tool preserves these as `excludedSequences`. A complete GCF RefSeq scan MUST NOT be described as complete coverage of every GRCh38.p14 sequence representation until those four are separately sourced from the appropriate GCA/GenBank dataset and scanned. Also, GCF ALT and patches represent overlapping reference alternatives, not 3.298 billion unique biological bases.
 
 The official manifest and complete 1,003-batch schedule are archived in the user's BSNG Scientific Brain Google Drive folder:
 https://drive.google.com/file/d/1QBQVU0yTaWUCr2WyKfXXzFniZ4OJYZCt/view
