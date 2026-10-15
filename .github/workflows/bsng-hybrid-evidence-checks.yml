@@ -1,0 +1,29 @@
+name: BSNG hybrid biological evidence schema checks
+on:
+  push:
+    branches:
+      - feature/bsng-biological-benchmark-v0.4
+    paths:
+      - 'src/lib/hybrid-evidence-report.mjs'
+      - 'tests/hybrid-evidence-report.test.mjs'
+      - 'docs/bsng-hybrid-rna-protein-recognition-model-v0.4.md'
+      - '.github/workflows/bsng-hybrid-evidence-checks.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate-evidence-boundaries:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify evidence schema and existing biological tests
+        run: |
+          npm install --no-audit --no-fund
+          npm run check
+          npm test
