@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "status": "OFFICIAL_NCBI_GRCH38P14_PLAN_VALIDATED_NO_GENOME_WIDE_SCAN_EXECUTED",
+  "source": {
+    "report": "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/405/GCF_000001405.40_GRCh38.p14/GCF_000001405.40_GRCh38.p14_assembly_report.txt",
+    "assembly": "GRCh38.p14",
+    "accession": "GCF_000001405.40",
+    "officialReportSha256": "64318ddff470b69b261a667d813210044f60d4ce654253a547db80ff73638d38",
+    "planSha256": "22c67ad85730b19c97725ddf913b41d6749b7169b880a5af6724b64dea513e50"
+  },
+  "partition": {
+    "A_CHROMOSOMES": {
+      "sequences": 25,
+      "bases": 3088286401,
+      "batches": 323
+    },
+    "B_REMAINING_PRIMARY": {
+      "sequences": 166,
+      "bases": 11171206,
+      "batches": 166
+    },
+    "C_ALTERNATES_PATCHES": {
+      "sequences": 514,
+      "bases": 198973029,
+      "batches": 514
+    },
+    "refseqTotal": {
+      "sequences": 705,
+      "bases": 3298430636,
+      "batches": 1003
+    },
+    "excludedGenbankOnly": {
+      "sequences": 4,
+      "bases": 481426,
+      "reason": "Not represented by RefSeq accession in the GCF assembly report; require GCA GenBank source or explicit separate coverage plan"
+    }
+  },
+  "processingPolicy": {
+    "maxOwnedBasesPerBatch": 10000000,
+    "windowFlankBasesForCtcf": 18,
+    "model": "Natural CTCF JASPAR MA0139.1",
+    "exploratoryModelThresholdLog2Odds": 15,
+    "candidateRetention": "ALL_QUALIFYING_WINDOWS_ARCHIVED_COMPRESSED_NOT_TOP20_ONLY",
+    "requiredOfficialFastaSha256": "NOT_YET_FROZEN",
+    "referenceDatasetStatus": "FASTA_NOT_YET_PROVISIONED",
+    "highVolumePersistentStorageStatus": "NOT_YET_PROVISIONED",
+    "genomeWideCompletionStatus": "NOT_STARTED",
+    "bsngPhysicalBindingStatus": "NOT_ASSESSABLE"
+  },
+  "validation": {
+    "regressionTestsPassed": 57,
+    "githubActionRun": "https://github.com/jacquesjacobs77/BSNG-Mobile/actions/runs/38787045662",
+    "officialAssemblyManifestArchive": "https://drive.google.com/file/d/1QBQVU0yTaWUCr2WyKfXXzFniZ4OJYZCt/view",
+    "archivedOnGoogleDrive": true
+  },
+  "provenanceCaveat": "Reference representations of a chromosome may overlap; bases summed over ALT and patches are not independent unique human genetic loci."
+}
