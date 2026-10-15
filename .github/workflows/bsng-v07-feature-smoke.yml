@@ -1,0 +1,73 @@
+name: BSNG v0.7 real GRCh38 research and Android validation
+on:
+  push:
+    branches:
+      - feature/bsng-active-research-v0.7
+    paths:
+      - 'src/lib/bsng-active-ctcf-screen.mjs'
+      - 'scripts/run_active_grch38_job.mjs'
+      - 'scripts/publish_v07_result.mjs'
+      - 'src/screens/ActiveGenomeResearchPanel.tsx'
+      - 'App.tsx'
+      - 'tests/bsng-active-ctcf-screen.test.mjs'
+      - '.github/workflows/bsng-v07-feature-smoke.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verified-cloud-and-android-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install and run every scientific regression plus TS checks
+        run: |
+          npm install --no-audit --no-fund
+          npm run check
+          npm test
+      - name: Test first authenticated cloud research analysis against 100,000 REAL human GRCh38 bases
+        env:
+          BSNG_CHROMOSOME: X
+          BSNG_START: '1000000'
+          BSNG_LENGTH: '100000'
+        run: node scripts/run_active_grch38_job.mjs
+      - name: Verify public-source molecular evidence claims and model coordinates
+        run: |
+          node --input-type=module <<'NODE'
+          import {readFileSync} from 'node:fs';
+          import assert from 'node:assert/strict';
+          const r=JSON.parse(readFileSync('artifacts/BSNG-active-report.json','utf8'));
+          assert.equal(r.source.type,'REAL_HUMAN_PUBLIC_REFERENCE');
+          assert.equal(r.source.assembly,'GRCh38');
+          assert.equal(r.source.bases,100000);
+          assert.equal(r.source.start1BasedInclusive,1000000);
+          assert.equal(r.source.end1BasedInclusive,1099999);
+          assert.equal(r.source.chunks.length,1);
+          assert.equal(r.source.chunks[0].ensemblIdentifier,'chromosome:GRCh38:X:1000000:1099999:1');
+          assert.equal(r.analysis.naturalProteinMotifScreen.allWindowsAccountedFor,true);
+          assert.equal(r.analysis.naturalProteinMotifScreen.jasparMatrixId,'MA0139.1');
+          assert.equal(r.analysis.naturalProteinMotifScreen.candidates.length,20);
+          assert.equal(r.evidence.jointBsngHybridRecognition,'NOT_ASSESSABLE');
+          assert.equal(r.evidence.genomicIntegrationFeasibility,'NOT_ASSESSABLE');
+          assert.equal(r.codeCommit,process.env.GITHUB_SHA);
+          assert.ok(r.analysis.naturalProteinMotifScreen.candidates.every(x=>x.start1BasedInclusive>=1000000&&x.end1BasedInclusive<=1099999&&!x.measuredBsngBinding));
+          console.log('REAL HUMAN GENOMIC V0.7 SOURCE AND SCIENTIFIC REPORT VERIFIED');
+          NODE
+      - name: Build complete Android-compatible v0.7 update without native package changes
+        run: npx expo export --platform android --output-dir /tmp/bsng-v07-js --clear
+      - name: Archive reference FASTA and full v0.7 run report
+        uses: actions/upload-artifact@v4
+        with:
+          name: BSNG-v0.7-first-authentic-100K-scientific-smoke
+          path: |
+            artifacts/BSNG-active-report.json
+            artifacts/BSNG-active-index-entry.json
+            artifacts/*-GRCh38-reference.fa.gz
+            docs/bsng-v07-active-research-protocol.md
+          if-no-files-found: error
+          retention-days: 30
