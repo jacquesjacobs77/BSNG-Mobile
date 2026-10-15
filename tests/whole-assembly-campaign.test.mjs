@@ -77,7 +77,7 @@ test('GRCh38 assembly plan includes A chromosomes, B remaining primary, C altern
  assert.throws(()=>verifyPlan(broken),/Tampered/);
 });
 test('rejects mislabeled, truncated or incorrectly constructed assembly reports and batch policy',()=>{
- assert.throws(()=>parseAssemblyReport(createReport().replace('GRCh38.p14','T2T-CHM13')),/not an authenticated-content/);
+ assert.throws(()=>parseAssemblyReport(createReport().replace('GRCh38.p14','T2T-CHM13')),/Not an authenticated-content/);
  assert.throws(()=>parseAssemblyReport(createReport().replace('NC_000001.11','NC_000002.11')),/duplicate/i);
  assert.throws(()=>planWholeAssembly(parseAssemblyReport(createReport()),{maxBases:10000001}),/10,000,000/);
 });
