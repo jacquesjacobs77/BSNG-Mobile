@@ -4,7 +4,7 @@ import {mkdtemp,writeFile,readFile,rm,unlink,mkdir} from 'node:fs/promises';
 import {join} from 'node:path';
 import {tmpdir} from 'node:os';
 import {createHash} from 'node:crypto';
-import {gunzipSync} from 'node:zlib';
+import {gunzipSync,gzipSync} from 'node:zlib';
 import {open} from 'node:fs/promises';
 import {parseAssemblyReport,planWholeAssembly,verifyPlan,PRIMARY_CHROMOSOMES} from '../src/lib/whole-assembly-manifest.mjs';
 import {CTCF_PWM} from '../src/lib/ctcf-reference-model.mjs';
@@ -13,6 +13,7 @@ import {CTCF_SCREEN_POLICY,scanCtcfBatch,verifyBatchArtifacts}
  from '../src/lib/whole-assembly-ctcf-batch.mjs';
 import {campaignCoverage,runWholeGenomeCampaign}
  from '../src/lib/whole-assembly-coordinator.mjs';
+import {freezeOfficialFasta,expectedNcbiMd5} from '../src/lib/whole-assembly-source-provenance.mjs';
 
 const sha=x=>createHash('sha256').update(x).digest('hex');
 const best19=CTCF_PWM.weights.map(col=>'ACGT'[Array.from(col).indexOf(Math.max(...col))]).join('');
@@ -211,4 +212,25 @@ test('pinned FASTA hash mismatch blocks source, corrupt receipt cannot be silent
  const path=join(dir,plan.batches[0].id+'.candidates.ndjson.gz');
  await writeFile(path,'tampered');
  await assert.rejects(()=>runWholeGenomeCampaign({...opts,expectedFastaSha256:fx.sha,maxBatches:1}),/corruption/);
+});
+
+test('trusted official MD5 listing and decompressed SHA256 must match before genome FASTA can be frozen',async t=>{
+ const fx=await makeFixture();t.after(()=>rm(fx.root,{recursive:true,force:true}));
+ const zipped=join(fx.root,'GCF_000001405.40_GRCh38.p14_genomic.fna.gz');
+ const raw=await readFile(fx.fasta),packed=gzipSync(raw);
+ await writeFile(zipped,packed);
+ const md5=createHash('md5').update(packed).digest('hex');
+ const listing=md5+'  ./GCF_000001405.40_GRCh38.p14_genomic.fna.gz\\n';
+ const official='https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/405/GCF_000001405.40_GRCh38.p14/GCF_000001405.40_GRCh38.p14_genomic.fna.gz';
+ assert.equal(expectedNcbiMd5(listing),md5);
+ assert.throws(()=>expectedNcbiMd5(listing+listing),/exactly one/);
+ const inputs={plan:getPlan(),gzipPath:zipped,fastaPath:fx.fasta,
+  faiPath:fx.fai,officialMd5Listing:listing,officialSourceUrl:official};
+ const freeze=await freezeOfficialFasta(inputs);
+ assert.equal(freeze.status,'FASTA_SOURCE_VERIFIED_LOCALLY_NOT_YET_GENOME_SCANNED');
+ assert.equal(freeze.fullUncompressedFastaSha256,fx.sha);
+ assert.equal(freeze.refseqSequencesPresent,29);
+ await assert.rejects(()=>freezeOfficialFasta({...inputs,officialMd5Listing:'0'.repeat(32)+'  ./GCF_000001405.40_GRCh38.p14_genomic.fna.gz\\n'}),/differs from official/);
+ await writeFile(fx.fasta,Buffer.concat([raw,Buffer.from('\\nTAMPERED')]));
+ await assert.rejects(()=>freezeOfficialFasta(inputs),/differs from validated NCBI gzip decompression/);
 });
