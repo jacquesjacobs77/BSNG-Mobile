@@ -37,15 +37,20 @@ export function parseAssemblyReport(text){
    if(accessions.has(refseqAccession))throw Error('Duplicate RefSeq accession: '+refseqAccession);
    accessions.add(refseqAccession);
    let track;
-   if(assemblyUnit==='Primary Assembly'){
-     if(sequenceRole==='assembled-molecule'&&PRIMARY_CHROMOSOMES.includes(molecule))track='A_CHROMOSOMES';
+   // NCBI places the mitochondrial molecule in the non-nuclear unit,
+   // not the nuclear "Primary Assembly" unit. It is nevertheless Track A.
+   const normalizedMolecule=refseqAccession==='NC_012920.1'?'MT':molecule;
+   if(refseqAccession==='NC_012920.1'&&sequenceRole==='assembled-molecule'){
+     track='A_CHROMOSOMES';
+   }else if(assemblyUnit==='Primary Assembly'){
+     if(sequenceRole==='assembled-molecule'&&PRIMARY_CHROMOSOMES.includes(normalizedMolecule))track='A_CHROMOSOMES';
      else track='B_REMAINING_PRIMARY';
    }else track='C_ALTERNATES_PATCHES';
-   const record={track,sequenceName,sequenceRole,assignedMolecule:molecule,
+   const record={track,sequenceName,sequenceRole,assignedMolecule:normalizedMolecule,
      assignedMoleculeType:moleculeType,genbankAccession,relationship,refseqAccession,
      assemblyUnit,length,ucscName,biologicallyDistinctLocus:track!=='C_ALTERNATES_PATCHES'};
-   if(track==='A_CHROMOSOMES'&&names.has(molecule))throw Error('Duplicate primary assembled molecule '+molecule);
-   if(track==='A_CHROMOSOMES')names.add(molecule);
+   if(track==='A_CHROMOSOMES'&&names.has(normalizedMolecule))throw Error('Duplicate primary assembled molecule '+normalizedMolecule);
+   if(track==='A_CHROMOSOMES')names.add(normalizedMolecule);
    records.push(record);
  }
  if(records.length<25)throw Error('Incomplete assembly report: fewer than 25 records');
