@@ -1,0 +1,69 @@
+name: BSNG v0.8 whole-assembly manifest and restartable genomics validation
+on:
+  push:
+    branches:
+      - feature/bsng-whole-assembly-continuous-scan-v0.8
+    paths:
+      - 'src/lib/whole-assembly-*.mjs'
+      - 'scripts/prepare_grch38_assembly_plan.mjs'
+      - 'scripts/run_whole_assembly_campaign.mjs'
+      - 'tests/whole-assembly-campaign.test.mjs'
+      - '.github/workflows/bsng-v08-whole-assembly-engine-validation.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  assembly-and-scientific-unit-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify full project TypeScript and all scientific regression tests
+        run: |
+          npm install --no-audit --no-fund
+          npm run check
+          npm test
+      - name: Retrieve authoritative NCBI GRCh38.p14 assembly report
+        env:
+          BSNG_CAMPAIGN_DIR: artifacts/bsng-grch38-p14-campaign
+          BSNG_BATCH_OWNED_BASES: '10000000'
+        run: |
+          node scripts/prepare_grch38_assembly_plan.mjs
+      - name: Verify A/B/C scope and complete non-overlapping chromosome and alternative-contig batch plan
+        run: |
+          node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict';
+          import {readFileSync} from 'node:fs';
+          import {verifyPlan} from './src/lib/whole-assembly-manifest.mjs';
+          const plan=JSON.parse(readFileSync('artifacts/bsng-grch38-p14-campaign/whole-assembly-plan.json','utf8'));
+          assert.equal(verifyPlan(plan),true);
+          assert.equal(plan.trackSequenceCounts.A_CHROMOSOMES,25);
+          assert.ok(plan.trackTotals.B_REMAINING_PRIMARY.sequences>0);
+          assert.ok(plan.trackTotals.C_ALTERNATES_PATCHES.sequences>0);
+          assert.ok(plan.totalOwnedBases>3_000_000_000);
+          assert.ok(plan.totalBatches>300);
+          assert.ok(plan.batches.every(b=>b.ownedBases>0&&b.ownedBases<=10_000_000));
+          assert.ok(plan.batches.some(b=>b.assignedMolecule==='MT'&&b.track==='A_CHROMOSOMES'));
+          assert.ok(plan.sequences.every(s=>s.refseqAccession&&s.length>0));
+          console.log('OFFICIAL COMPLETE GRCH38.P14 THREE-TRACK MANIFEST PASSED');
+          console.log(JSON.stringify({
+           assembly:plan.refseqAssemblyAccession,
+           reportSha256:plan.assemblyReportSha256,planSha256:plan.planSha256,
+           totalSequences:plan.totalSequences,totalBatches:plan.totalBatches,
+           totalReferenceRepresentationBases:plan.totalOwnedBases,
+           tracks:plan.trackTotals
+          },null,2));
+          console.log('IMPORTANT: MANIFEST VALIDATED; NO WHOLE-GENOME FASTA SCAN CLAIMED.');
+          NODE
+      - name: Archive reproducible full-assembly batch plan and NCBI source report (NO genome FASTA)
+        uses: actions/upload-artifact@v4
+        with:
+          name: BSNG-v0.8-official-GRCh38p14-whole-assembly-batch-plan
+          path: artifacts/bsng-grch38-p14-campaign/
+          retention-days: 90
+          if-no-files-found: error
