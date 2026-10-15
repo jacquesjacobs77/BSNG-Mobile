@@ -1,0 +1,132 @@
+{
+  "schemaVersion": 1,
+  "title": "BSNG v0.6 — published GUIDE-seq human GRCh38 chr19 coordinate evidence",
+  "studyDate": "2026-10-15",
+  "sourceType": "PUBLISHED_PIPELINE_TEST_READS_NOT_INDEPENDENT_BIOLOGICAL_REPLICATION",
+  "biology": "Existing natural RNA-guided Cas nuclease associated cleavage, not BSNG nanite binding",
+  "referenceAssembly": "GRCh38",
+  "chromosome": "19",
+  "provenance": {
+    "sourceRepository": "tsailabSJ/guideseq",
+    "sourceCommit": "82b015503e689f92f4d495ff5ba80d3fe2d5991c",
+    "sourceFile": "test/identified/test_identifiedOfftargets.rmblck.rm_no_match.annot.tsv",
+    "sourceFileGitBlob": "107c27715bb6555c0945ec435abf8de82e4323d3",
+    "sourceFileSHA256": "6a2883ec645c5368f7130c5b955236eee6ba3d25c8f205f9f0b1628f24cfdb70",
+    "referenceManifest": "test/test_manifest.yaml",
+    "referenceManifestSha1Blob": "ba1c486b460a5b97b04ce53c42017390381c3b14",
+    "upstreamSourceUrl": "https://github.com/tsailabSJ/guideseq/blob/82b015503e689f92f4d495ff5ba80d3fe2d5991c/test/identified/test_identifiedOfftargets.rmblck.rm_no_match.annot.tsv",
+    "protocol": "docs/guideseq-hg38-coordinate-evidence-v0.6.md",
+    "verificationRun": "https://github.com/jacquesjacobs77/BSNG-Mobile/actions/runs/38693499750",
+    "verificationSourceCommit": "5b75abeb8e3527940a1902bda0dbe606d4bea34a",
+    "fullSourceAndProvenanceArchive": "BSNG-GUIDEseq-GRCh38-Chr19-observed-RNA-guided-evidence",
+    "artifactRetentionDays": 30
+  },
+  "audit": {
+    "observedSourceSites": 7,
+    "verifiedExactAlignedSites": 6,
+    "sequenceMismatches": 0,
+    "gappedUnresolvedSites": 1,
+    "completeObservedUMIReadSupportSum": 7586,
+    "softwareRegressionTestsPassed": 44,
+    "coordinateConversion": "source BED 0-based half-open -> GRCh38 1-based inclusive (start+1..end)",
+    "strandVerification": "compare reported aligned DNA sequence to plus-strand reference or reverse-complement for minus-strand"
+  },
+  "rankedReadSupportLocations": [
+    {
+      "sourceRow": 8,
+      "chromosome": "chr19",
+      "start1BasedInclusive": 55115749,
+      "end1BasedInclusive": 55115771,
+      "strand": "-",
+      "reportedSequence": "GGGGCCACTAGGGACAGGATTGG",
+      "measuredReadSupport": 6890,
+      "sourceFeatureLabel": "intron (PPP1R12C, intron 1 of 21)",
+      "sourceReferenceVerification": "EXACT_MATCH_TO_ENSEMBL_GRCH38",
+      "sourceReadoutMeaning": "GUIDE-seq UMI-supported DNA cleavage signal (not physical binding affinity)"
+    },
+    {
+      "sourceRow": 3,
+      "chromosome": "chr19",
+      "start1BasedInclusive": 16064177,
+      "end1BasedInclusive": 16064199,
+      "strand": "-",
+      "reportedSequence": "GGGGCTTCTAAGGACAGGATGGG",
+      "measuredReadSupport": 550,
+      "sourceFeatureLabel": "Intergenic (LINC01855)",
+      "sourceReferenceVerification": "EXACT_MATCH_TO_ENSEMBL_GRCH38",
+      "sourceReadoutMeaning": "GUIDE-seq UMI-supported DNA cleavage signal (not physical binding affinity)"
+    },
+    {
+      "sourceRow": 4,
+      "chromosome": "chr19",
+      "start1BasedInclusive": null,
+      "end1BasedInclusive": null,
+      "strand": null,
+      "reportedSequence": null,
+      "measuredReadSupport": 66,
+      "sourceFeatureLabel": "intron (GNG7, intron 2 of 4)",
+      "sourceReferenceVerification": "GAPPED_ALIGNMENT_UNRESOLVED",
+      "sourceReadoutMeaning": "GUIDE-seq UMI-supported DNA cleavage signal (not physical binding affinity)"
+    },
+    {
+      "sourceRow": 6,
+      "chromosome": "chr19",
+      "start1BasedInclusive": 45929459,
+      "end1BasedInclusive": 45929481,
+      "strand": "+",
+      "reportedSequence": "GGGGGACAGAGGGACAGGATGGG",
+      "measuredReadSupport": 43,
+      "sourceFeatureLabel": "Intergenic (NANOS2)",
+      "sourceReferenceVerification": "EXACT_MATCH_TO_ENSEMBL_GRCH38",
+      "sourceReadoutMeaning": "GUIDE-seq UMI-supported DNA cleavage signal (not physical binding affinity)"
+    },
+    {
+      "sourceRow": 5,
+      "chromosome": "chr19",
+      "start1BasedInclusive": 45172697,
+      "end1BasedInclusive": 45172719,
+      "strand": "-",
+      "reportedSequence": "GCTGGGCCAGGGGACAGGATGGG",
+      "measuredReadSupport": 24,
+      "sourceFeatureLabel": "intron (TRAPPC6A, intron 1 of 5)",
+      "sourceReferenceVerification": "EXACT_MATCH_TO_ENSEMBL_GRCH38",
+      "sourceReadoutMeaning": "GUIDE-seq UMI-supported DNA cleavage signal (not physical binding affinity)"
+    },
+    {
+      "sourceRow": 2,
+      "chromosome": "chr19",
+      "start1BasedInclusive": 13795375,
+      "end1BasedInclusive": 13795397,
+      "strand": "+",
+      "reportedSequence": "GGGGCCAATAGGGACAGGCGGTG",
+      "measuredReadSupport": 8,
+      "sourceFeatureLabel": "promoter-TSS (ZSWIM4)",
+      "sourceReferenceVerification": "EXACT_MATCH_TO_ENSEMBL_GRCH38",
+      "sourceReadoutMeaning": "GUIDE-seq UMI-supported DNA cleavage signal (not physical binding affinity)"
+    },
+    {
+      "sourceRow": 7,
+      "chromosome": "chr19",
+      "start1BasedInclusive": 48749674,
+      "end1BasedInclusive": 48749696,
+      "strand": "-",
+      "reportedSequence": "AGGGCCCTTATGGACAGGATGGG",
+      "measuredReadSupport": 5,
+      "sourceFeatureLabel": "3' UTR (NM_000148, exon 4 of 4)",
+      "sourceReferenceVerification": "EXACT_MATCH_TO_ENSEMBL_GRCH38",
+      "sourceReadoutMeaning": "GUIDE-seq UMI-supported DNA cleavage signal (not physical binding affinity)"
+    }
+  ],
+  "physicalBSNGHybridStatus": "NOT_ASSESSABLE",
+  "bsngGenomicIntegrationStatus": "NOT_ASSESSABLE",
+  "interpretation": "Published experimental GUIDE-seq test-output observations were mapped to genuine GRCh38 chr19 positions and six canonical site sequences matched Ensembl. This does not establish BSNG nanite binding, biological efficacy or safe integration. The rank is observed supporting read count only; not molecular affinity.",
+  "limitations": [
+    "Published developer pipeline demonstration, not independent laboratory replication",
+    "One gapped aligned site lacks a directly verifiable canonical sequence",
+    "Upstream feature annotations are inherited and their annotation release is not pinned",
+    "Experiments in natural RNA-guided nuclease systems, not a physical BSNG hybrid",
+    "CTCF reference genome benchmark was on chrX, not this chr19 interval",
+    "No complete off-target search or comparable negative-site control in this test fixture",
+    "Top read support could reflect technical and biological confounders; not safe integration targeting"
+  ]
+}
