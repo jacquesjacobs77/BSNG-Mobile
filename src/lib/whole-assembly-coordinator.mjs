@@ -44,7 +44,10 @@ export function campaignCoverage(plan,receipts){
  }
  for(const t of Object.values(counts))t.coveredFraction=t.totalOwnedBases===0?1:t.completedOwnedBases/t.totalOwnedBases;
  const completedBatches=stored.size,allComplete=completedBatches===plan.totalBatches;
- return {status:allComplete?'COMPLETE':'INCOMPLETE',
+ return {status:!allComplete?'INCOMPLETE':plan.excludedGenbankOnlySequenceCount>0?'REFSEQ_SCOPE_COMPLETE_GENBANK_ONLY_REMAIN':'COMPLETE',
+  excludedGenbankOnlySequenceCount:plan.excludedGenbankOnlySequenceCount||0,
+  excludedGenbankOnlyBases:plan.excludedGenbankOnlyBases||0,
+  allAssemblyReportRepresentationsComplete:allComplete&&!(plan.excludedGenbankOnlySequenceCount>0),
   completedBatches,totalBatches:plan.totalBatches,
   completedOwnedBases:Object.values(counts).reduce((n,x)=>n+x.completedOwnedBases,0),
   totalOwnedBases:plan.totalOwnedBases,coverageByTrack:counts,
