@@ -24,7 +24,7 @@ export function scoreObservedPair(guide,target){
     if(guide[i]!==target[i])mismatches++;
     if(target[i]==='G'||target[i]==='C')gc++;
   }
-  return {score:-mismatches,mismatches,referenceGC:gc/20};
+  return {score:mismatches===0?0:-mismatches,mismatches,referenceGC:gc/20};
 }
 export function describeRows(rows){
   if(!Array.isArray(rows)||!rows.length)throw Error('Expected nonempty published experimental observations.');
