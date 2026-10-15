@@ -68,6 +68,10 @@ export async function scanCtcfBatch({fh,fai,batch,outputDir,planSha256,sourceFas
  await mkdir(outputDir,{recursive:true});
  const output=join(outputDir,batch.id+'.candidates.ndjson.gz');
  const temporary=output+'.part';
+ // Under the coordinator's single-writer lock, an interrupted unverified
+ // stream may leave an orphan .part. Never treat it as evidence: discard it
+ // and recompute the entire batch before creating a verified receipt.
+ await rm(temporary,{force:true});
  const zipped=createGzip({level:6}),fs=createWriteStream(temporary,{flags:'wx'});
  zipped.pipe(fs);
  const rawHash=createHash('sha256'),ownedHash=createHash('sha256');
