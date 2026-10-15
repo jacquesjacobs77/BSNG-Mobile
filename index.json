@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "title": "BSNG public human GRCh38 computational research report registry",
+  "updatedAt": "2026-10-15T11:45:40.940Z",
+  "reportCountInIndex": 1,
+  "totalRetainedInGitHistory": "Reports are committed individually, index shows last 100.",
+  "privacy": "Only public human reference genome, never patient data",
+  "sourceModel": "Natural human CTCF JASPAR MA0139.1; NOT a physical BSNG nanite",
+  "researchStatus": "PUBLIC_REFERENCE_COMPUTATION_NOT_BSNG_BINDING_PROOF",
+  "reports": [
+    {
+      "runId": "38728890063-1",
+      "createdAt": "2026-10-15T11:45:40.490Z",
+      "status": "COMPLETED_REFERENCE_ONLY",
+      "assembly": "GRCh38",
+      "chromosome": "X",
+      "start": 1000000,
+      "end": 10999999,
+      "bases": 10000000,
+      "sequenceSha256": "5bc91fa875ca7c069548838d1fef58a32d527d59211fb28c74331e1369f71953",
+      "model": "Natural CTCF JASPAR MA0139.1",
+      "candidateCount": 20,
+      "bestModelScore": 23.535866148651255,
+      "githubRunUrl": "https://github.com/jacquesjacobs77/BSNG-Mobile/actions/runs/38728890063",
+      "reportPath": "reports/38728890063-1.json",
+      "physicalBsngBindingStatus": "NOT_ASSESSABLE"
+    }
+  ]
+}
