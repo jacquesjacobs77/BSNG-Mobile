@@ -44,6 +44,8 @@ jobs:
           assert.match(panel,/research-results-v07/);
           assert.match(panel,/bsng-v07-active-research.yml/);
           assert.match(panel,/NOT_ASSESSABLE/);
+          assert.match(panel,/setShowAllFindings/);
+          assert.match(panel,/chr'\+report\.source\.chromosome/);
           console.log('Installed APK v0.2 native runtime is compatible with research JS v0.7.');
           NODE
           curl --fail --silent --show-error --max-time 20 \
@@ -75,5 +77,5 @@ jobs:
         with:
           eas-version: latest
           token: ${{ secrets.BSNG_STUDIO_GITHUB_UPDATES }}
-      - name: Publish research v0.7 to established Android preview OTA channel
-        run: eas update --channel preview --platform android --message "BSNG v0.7 authentic GRCh38 cloud genome jobs, persistent research results and reproducible CTCF motif findings" --non-interactive
+      - name: Publish v0.7 chromosome label and 20-candidate report UI correction
+        run: eas update --channel preview --platform android --message "BSNG v0.7.1 chromosome X coordinate-label correction and expandable all-20 candidate findings" --non-interactive
