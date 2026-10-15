@@ -1,0 +1,60 @@
+name: BSNG hg38 coordinate verified GUIDE-seq biological evidence
+on:
+  push:
+    branches:
+      - feature/bsng-coordinate-resolved-results-v0.6
+    paths:
+      - 'src/lib/guideseq-coordinate-evidence.mjs'
+      - 'scripts/validate_guideseq_coordinate_evidence.mjs'
+      - 'tests/guideseq-coordinate-evidence.test.mjs'
+      - 'docs/guideseq-hg38-coordinate-evidence-v0.6.md'
+      - '.github/workflows/bsng-guideseq-hg38-evidence.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify-observed-rna-guide-seq-hg38:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check regression coverage and TypeScript
+        run: |
+          npm install --no-audit --no-fund
+          npm run check
+          npm test
+      - name: Verify real GUIDE-seq read-support and GRCh38 chr19 reference coordinates
+        run: node scripts/validate_guideseq_coordinate_evidence.mjs
+      - name: Enforce defensible biological evidence status
+        run: |
+          node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict';
+          import {readFileSync} from 'node:fs';
+          const x=JSON.parse(readFileSync('artifacts/BSNG-GUIDEseq-hg38-chr19-coordinate-evidence.json','utf8'));
+          assert.equal(x.referenceBuild,'GRCh38');
+          assert.equal(x.summary.observedSites,7);
+          assert.equal(x.summary.withSubstitutionsOnlyCoordinates,6);
+          assert.equal(x.summary.mismatchedReferenceSequenceSites,0);
+          assert.equal(x.summary.gappedOrUnresolvedSites,1);
+          assert.equal(x.source.sourceCommit,'82b015503e689f92f4d495ff5ba80d3fe2d5991c');
+          assert.ok(x.summary.verifiedReferenceSequenceSites>0);
+          assert.ok(x.rankedByObservedGuideSeqReadSupport.every(s=>s.bsngNaniteBindingEvidence===false));
+          assert.equal(x.integrationAssessment.integrationIsExperimentallyMeasured,false);
+          console.log('COORDINATE EVIDENCE AUDIT PASSED',JSON.stringify(x.summary));
+          NODE
+      - name: Archive original published source, manifest and audit-ready coordinate reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: BSNG-GUIDEseq-GRCh38-Chr19-observed-RNA-guided-evidence
+          path: |
+            artifacts/BSNG-GUIDEseq-hg38-chr19-coordinate-evidence.json
+            artifacts/GUIDEseq-published-hg38-chr19-original.tsv
+            artifacts/GUIDEseq-published-hg38-source-manifest.yaml
+            docs/guideseq-hg38-coordinate-evidence-v0.6.md
+          if-no-files-found: error
+          retention-days: 30
