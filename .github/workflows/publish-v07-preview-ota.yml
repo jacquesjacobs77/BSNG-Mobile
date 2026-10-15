@@ -1,0 +1,79 @@
+name: BSNG v0.7 publish verified active research UI to Android preview
+on:
+  push:
+    branches:
+      - feature/bsng-active-research-v0.7
+    paths:
+      - '.github/workflows/publish-v07-preview-ota.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: bsng-v07-preview-publish
+  cancel-in-progress: false
+
+jobs:
+  publish-reviewed-v07:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      CI: "true"
+      EXPO_TOKEN: ${{ secrets.BSNG_STUDIO_GITHUB_UPDATES }}
+    steps:
+      - name: Confirm Expo is configured without changing installed native runtime
+        run: |
+          test -n "$EXPO_TOKEN" || (echo "::error::Expo update secret unavailable" && exit 1)
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify exact native runtime and production research registry
+        run: |
+          node --input-type=module <<'NODE'
+          import {readFileSync} from 'node:fs';
+          import assert from 'node:assert/strict';
+          const app=JSON.parse(readFileSync('app.json','utf8')).expo;
+          const pkg=JSON.parse(readFileSync('package.json','utf8'));
+          assert.equal(app.version,'0.2.0');
+          assert.equal(pkg.version,'0.2.0');
+          assert.equal(app.runtimeVersion.policy,'appVersion');
+          assert.equal(app.updates.requestHeaders['expo-channel-name'],'preview');
+          assert.equal(app.extra.eas.projectId,'0169fa50-1d3c-41d9-9109-fc7ae3f58e07');
+          const panel=readFileSync('src/screens/ActiveGenomeResearchPanel.tsx','utf8');
+          assert.match(panel,/research-results-v07/);
+          assert.match(panel,/bsng-v07-active-research.yml/);
+          assert.match(panel,/NOT_ASSESSABLE/);
+          console.log('Installed APK v0.2 native runtime is compatible with research JS v0.7.');
+          NODE
+          curl --fail --silent --show-error --max-time 20 \
+            'https://raw.githubusercontent.com/jacquesjacobs77/BSNG-Mobile/research-results-v07/index.json' \
+            -o /tmp/bsng-v07-index.json
+          node --input-type=module <<'NODE'
+          import {readFileSync} from 'node:fs';
+          import assert from 'node:assert/strict';
+          const index=JSON.parse(readFileSync('/tmp/bsng-v07-index.json','utf8'));
+          assert.equal(index.schemaVersion,1);
+          assert.ok(index.reports.some(x=>x.bases===10_000_000&&x.assembly==='GRCh38'));
+          console.log('Independent mobile-facing public reference registry reachable and 10M run stored.');
+          NODE
+      - name: Run all genomic regression tests and static TypeScript checks
+        run: |
+          npm install --no-audit --no-fund
+          npm run check
+          npm test
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - name: Generate existing Expo assets
+        run: |
+          python -m pip install Pillow==11.3.0
+          python scripts/generate_assets.py
+      - name: Validate complete Android JS bundle
+        run: npx expo export --platform android --output-dir /tmp/bsng-v07-release --clear
+      - uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.BSNG_STUDIO_GITHUB_UPDATES }}
+      - name: Publish research v0.7 to established Android preview OTA channel
+        run: eas update --channel preview --platform android --message "BSNG v0.7 authentic GRCh38 cloud genome jobs, persistent research results and reproducible CTCF motif findings" --non-interactive
