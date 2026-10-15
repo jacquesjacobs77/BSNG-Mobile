@@ -1,0 +1,75 @@
+name: BSNG natural CTCF biological-reference benchmark
+on:
+  push:
+    branches:
+      - feature/bsng-biological-benchmark-v0.4
+    paths:
+      - '.github/workflows/bsng-ctcf-biological-reference.yml'
+      - 'scripts/validate_ctcf_biological_benchmark.mjs'
+      - 'scripts/analyze_real_ensembl_10m.mjs'
+      - 'src/lib/ctcf-reference-model.mjs'
+      - 'src/lib/ctcf-chipseq-benchmark.mjs'
+      - 'docs/ctcf-biological-validation-v0.4.md'
+      - 'tests/ctcf-*.test.mjs'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: bsng-natural-protein-benchmark
+  cancel-in-progress: false
+
+jobs:
+  ctcf-benchmark:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Run biological-model regression and TypeScript checks
+        run: |
+          npm install --no-audit --no-fund
+          npm run check
+          npm test
+      - name: Download real GRCh38 human reference, verify 10M sequence and 15bp null assay
+        run: node scripts/analyze_real_ensembl_10m.mjs
+      - name: Compare known human protein CTCF sequence recognition with experimental ChIP-seq evidence
+        run: node scripts/validate_ctcf_biological_benchmark.mjs
+      - name: Verify full biological evidence report has no false nanite claim
+        run: |
+          node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict';
+          import {readFileSync} from 'node:fs';
+          const r=JSON.parse(readFileSync('artifacts/GRCh38-chrX-10M-CTCF-biological-benchmark.json','utf8'));
+          assert.equal(r.genome.bases,10_000_000);
+          assert.equal(r.recognitionModel.matrixId,'MA0139.1');
+          assert.equal(r.experimentalDataset.peakFile,'ENCFF519CXF');
+          assert.ok(r.experimentalDataset.measuredPeakCountInRegion>=10);
+          assert.ok(r.observedBiologicalBenchmark.pairedSampleCount>=10);
+          assert.equal(r.biologicalNaniteBindingDemonstrated,false);
+          assert.equal(r.naniteIntegrationSafetyDemonstrated,false);
+          assert.equal(r.sourceCodeCommit,process.env.GITHUB_SHA);
+          assert.ok(r.topNaturalCTCFRecognitionCandidates.length>0);
+          console.log('BIOLOGICAL REFERENCE AUDIT PASSED', JSON.stringify({
+            measuredPeaks:r.experimentalDataset.measuredPeakCountInRegion,
+            validatedPairs:r.observedBiologicalBenchmark.pairedSampleCount,
+            descriptiveAUC:r.observedBiologicalBenchmark.aucAgainstGcMatchedBackground
+          }));
+          NODE
+      - name: Archive GRCh38, measured ENCODE peaks, model and full benchmark
+        uses: actions/upload-artifact@v4
+        with:
+          name: BSNG-real-human-CTCF-biological-reference
+          path: |
+            artifacts/GRCh38-chrX-10M-CTCF-biological-benchmark.json
+            artifacts/GRCh38-chrX-10M-report.json
+            artifacts/GRCh38-chrX-10M-hypothesis-assay.json
+            artifacts/GRCh38-chrX-1000000-10999999-10M.fa.gz
+            artifacts/ENCODE-ENCFF519CXF-K562-CTCF-peaks.bed.gz
+            artifacts/JASPAR-MA0139.1-CTCF-PFM.json
+            docs/ctcf-biological-validation-v0.4.md
+          if-no-files-found: error
+          retention-days: 30
