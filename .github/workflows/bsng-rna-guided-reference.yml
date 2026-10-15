@@ -1,0 +1,67 @@
+name: BSNG natural RNA-guided biological-reference benchmark
+on:
+  push:
+    branches:
+      - feature/bsng-rna-guided-reference-v0.5
+    paths:
+      - '.github/workflows/bsng-rna-guided-reference.yml'
+      - 'scripts/validate_rna_guided_reference.mjs'
+      - 'src/lib/rna-guided-reference-benchmark.mjs'
+      - 'tests/rna-guided-reference-benchmark.test.mjs'
+      - 'docs/rna-guided-spcas9-trueot-preregistration-v0.5.md'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  rna-guided-reference:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate RNA/protein research regressions
+        run: |
+          npm install --no-audit --no-fund
+          npm run check
+          npm test
+      - name: Read independently published natural RNA-guided activity observations
+        run: node scripts/validate_rna_guided_reference.mjs
+      - name: Audit independent biological evidence status
+        run: |
+          node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict';
+          import {readFileSync} from 'node:fs';
+          const d=JSON.parse(readFileSync('artifacts/BSNG-TrueOT-RNA-guided-natural-reference-benchmark.json','utf8'));
+          const h=JSON.parse(readFileSync('artifacts/BSNG-natural-reference-hybrid-readiness.json','utf8'));
+          assert.equal(d.sourceCodeRevision,process.env.GITHUB_SHA);
+          assert.equal(d.datasetSummary.publishedRows,1806);
+          assert.equal(d.datasetSummary.positiveRows,250);
+          assert.equal(d.datasetSummary.distinctGuideCount,36);
+          assert.equal(d.publishedDataset.sourceHasGenomeCoordinates,false);
+          assert.equal(d.biologicalBSNGHybridBindingDemonstrated,false);
+          assert.equal(d.experimentalBSNGIntegrationDemonstrated,false);
+          assert.equal(h.jointHybrid.assessed,false);
+          assert.equal(h.jointHybrid.scientificallyValidCombinationScore,null);
+          assert.ok(d.metrics.eligibleGuideCount>0);
+          assert.ok(d.metrics.primaryMacroAucEligibleGuides>=0&&d.metrics.primaryMacroAucEligibleGuides<=1);
+          console.log('RNA GUIDED EVIDENCE AUDIT VERIFIED',JSON.stringify({
+            rows:d.datasetSummary.publishedRows,
+            scored:d.datasetSummary.acceptedRows,
+            excluded:d.datasetSummary.excludedRows,
+            macroAuc:d.metrics.primaryMacroAucEligibleGuides
+          }));
+          NODE
+      - name: Archive complete reproducible RNA reference and hybrid readiness reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: BSNG-TrueOT-natural-RNA-guided-biological-reference
+          path: |
+            artifacts/BSNG-TrueOT-RNA-guided-natural-reference-benchmark.json
+            artifacts/BSNG-natural-reference-hybrid-readiness.json
+            docs/rna-guided-spcas9-trueot-preregistration-v0.5.md
+          if-no-files-found: error
+          retention-days: 30
