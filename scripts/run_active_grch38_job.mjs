@@ -109,8 +109,8 @@ const results={
  githubRunId:runId,
  githubRunUrl:runUrl,
  generatedAt:new Date().toISOString(),firstFetchedAt,
- codeCommit:process.env.GITHUB_SHA||'local-uncommitted',
- codeBranch:process.env.GITHUB_REF_NAME||'local',
+ codeCommit:process.env.BSNG_CODE_REVISION||process.env.GITHUB_SHA||'local-uncommitted',
+ codeBranch:process.env.BSNG_CODE_BRANCH||process.env.GITHUB_REF_NAME||'local',
  source:{
    type:'REAL_HUMAN_PUBLIC_REFERENCE',organism:'Homo sapiens',
    service:'Ensembl REST',assembly:region.assembly,
@@ -163,7 +163,7 @@ const results={
   'A reported negative or missing candidate must not be replaced with a favorable simulated result.',
  ],
  reproducibility:{
-   codeCommit:process.env.GITHUB_SHA||'local-uncommitted',
+   codeCommit:process.env.BSNG_CODE_REVISION||process.env.GITHUB_SHA||'local-uncommitted',
    protocol:'docs/bsng-v07-active-research-protocol.md',
    requestedSettings:{chromosome:region.chromosome,start:region.start1BasedInclusive,length},
    model:'JASPAR MA0139.1 CTCF',modelPfmSha256,
