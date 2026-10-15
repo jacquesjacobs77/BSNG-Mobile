@@ -126,6 +126,9 @@ const results={
    nucleotideComposition:composition,
    naturalProteinMotifScreen:{
      ...ctcf,
+     // Serialize assembly-scoped chromosome in both findings and candidate export.
+     // Older immutable reports may contain null here; the app reads the verified source chromosome.
+     findings:ctcf.findings.map(s=>({...s,chromosome:'chr'+region.chromosome})),
      candidates:ctcf.findings.map(s=>({
       ...s,chromosome:'chr'+region.chromosome,
       sourceReferenceRegion:'GRCh38 chr'+region.chromosome+':'+s.start1BasedInclusive+'-'+s.end1BasedInclusive,
