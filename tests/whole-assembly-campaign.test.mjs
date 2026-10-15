@@ -20,7 +20,7 @@ const repeat=(seq,n)=>seq.repeat(Math.ceil(n/seq.length)).slice(0,n);
 const fixtureRows=PRIMARY_CHROMOSOMES.map((chr,i)=>({
  name:chr,role:'assembled-molecule',molecule:chr,
  accession:chr==='MT'?'NC_012920.1':'NC_'+String(i+1).padStart(6,'0')+'.11',
- length:chr==='MT'?93:109,unit:'Primary Assembly'
+ length:chr==='MT'?93:109,unit:chr==='MT'?'non-nuclear':'Primary Assembly'
 })).concat([
  {name:'chr1-unlocal',role:'unlocalized-scaffold',molecule:'1',accession:'NW_000001.1',length:79,unit:'Primary Assembly'},
  {name:'unplaced',role:'unplaced-scaffold',molecule:'na',accession:'NW_000002.1',length:89,unit:'Primary Assembly'},
