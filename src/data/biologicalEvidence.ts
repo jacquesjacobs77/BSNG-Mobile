@@ -1,4 +1,15 @@
-/**\n * Immutable offline research-reference snapshot derived from the cited, upstream\n * GUIDE-seq pipeline TEST data and independently verified Ensembl GRCh38.\n * Not an actual BSNG nanite assay and not live-updating.\n * Exact upstream file checksum verified in GitHub Actions run 38693499750.\n */\nexport type GuideSeqPublishedSite = {\n  id:string;chromosome:string;start1:number|null;end1:number|null;strand:string|null;\n  readSupport:number;sequence:string|null;sourceRow:number;sourceFeatureLabel:string|null;\n  observedWindowCenter0:number;verification:string;\n};\nexport const GUIDESEQ_REFERENCE_SNAPSHOT = {
+/**
+ * Immutable offline research-reference snapshot derived from the cited, upstream
+ * GUIDE-seq pipeline TEST data and independently verified Ensembl GRCh38.
+ * Not an actual BSNG nanite assay and not live-updating.
+ * Exact upstream file checksum verified in GitHub Actions run 38693499750.
+ */
+export type GuideSeqPublishedSite = {
+  id:string;chromosome:string;start1:number|null;end1:number|null;strand:string|null;
+  readSupport:number;sequence:string|null;sourceRow:number;sourceFeatureLabel:string|null;
+  observedWindowCenter0:number;verification:string;
+};
+export const GUIDESEQ_REFERENCE_SNAPSHOT = {
   "genomeAssembly": "GRCh38",
   "biology": "Published human RNA-guided Cas nuclease GUIDE-seq test observations",
   "sourceType": "PUBLIC_PIPELINE_TEST_DATA",
@@ -13,7 +24,8 @@
   "genomeCoordinateBasis": "GRCh38 chr19, 1-based inclusive",
   "bindingAffinityMeasured": false,
   "safeIntegrationMeasured": false
-} as const;\nexport const GUIDESEQ_PUBLISHED_SITES:GuideSeqPublishedSite[] = [
+} as const;
+export const GUIDESEQ_PUBLISHED_SITES:GuideSeqPublishedSite[] = [
   {
     "id": "GUIDESEQ-TEST-7",
     "chromosome": "chr19",
@@ -105,7 +117,9 @@
     "observedWindowCenter0": 48749680,
     "verification": "GRCH38_REFERENCE_VERIFIED"
   }
-];\n\nexport const NATURAL_REFERENCE_STATUS = {
+];
+
+export const NATURAL_REFERENCE_STATUS = {
   "protein": {
     "name": "Human CTCF",
     "system": "JASPAR MA0139.1 vs ENCODE K562 ChIP-seq",
@@ -132,4 +146,4 @@
   },
   "physicalBsngHybrid": "NOT_ASSESSABLE",
   "integrationFeasibility": "NOT_ASSESSABLE"
-} as const;\n
+} as const;
