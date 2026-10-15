@@ -220,7 +220,7 @@ test('trusted official MD5 listing and decompressed SHA256 must match before gen
  const raw=await readFile(fx.fasta),packed=gzipSync(raw);
  await writeFile(zipped,packed);
  const md5=createHash('md5').update(packed).digest('hex');
- const listing=md5+'  ./GCF_000001405.40_GRCh38.p14_genomic.fna.gz\\n';
+ const listing=md5+'  ./GCF_000001405.40_GRCh38.p14_genomic.fna.gz'+String.fromCharCode(10);
  const official='https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/405/GCF_000001405.40_GRCh38.p14/GCF_000001405.40_GRCh38.p14_genomic.fna.gz';
  assert.equal(expectedNcbiMd5(listing),md5);
  assert.throws(()=>expectedNcbiMd5(listing+listing),/exactly one/);
@@ -230,7 +230,7 @@ test('trusted official MD5 listing and decompressed SHA256 must match before gen
  assert.equal(freeze.status,'FASTA_SOURCE_VERIFIED_LOCALLY_NOT_YET_GENOME_SCANNED');
  assert.equal(freeze.fullUncompressedFastaSha256,fx.sha);
  assert.equal(freeze.refseqSequencesPresent,29);
- await assert.rejects(()=>freezeOfficialFasta({...inputs,officialMd5Listing:'0'.repeat(32)+'  ./GCF_000001405.40_GRCh38.p14_genomic.fna.gz\\n'}),/differs from official/);
+ await assert.rejects(()=>freezeOfficialFasta({...inputs,officialMd5Listing:'0'.repeat(32)+'  ./GCF_000001405.40_GRCh38.p14_genomic.fna.gz'+String.fromCharCode(10)}),/differs from official/);
  await writeFile(fx.fasta,Buffer.concat([raw,Buffer.from('\\nTAMPERED')]));
  await assert.rejects(()=>freezeOfficialFasta(inputs),/differs from validated NCBI gzip decompression/);
 });
