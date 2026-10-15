@@ -1,0 +1,43 @@
+name: BSNG v0.6 Results app safety and bundle validation
+on:
+  push:
+    branches:
+      - feature/bsng-coordinate-resolved-results-v0.6
+    paths:
+      - 'App.tsx'
+      - 'src/screens/BiologicalEvidencePanel.tsx'
+      - 'src/data/biologicalEvidence.ts'
+      - '.github/workflows/bsng-coordinate-ui-checks.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate-results-screen:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install and static type check
+        run: |
+          npm install --no-audit --no-fund
+          npm run check
+      - name: Regression test all scientific evidence importers
+        run: npm test
+      - name: Compile complete Android-compatible JS update
+        run: npx expo export --platform android --output-dir /tmp/bsng-results-ota-check --clear
+      - name: Check scientific labels remain in the Results app
+        run: |
+          grep -q 'BiologicalEvidencePanel' App.tsx
+          grep -q 'NOT ASSESSABLE' src/screens/BiologicalEvidencePanel.tsx
+          grep -q 'REFERENCE_VERIFIED' src/data/biologicalEvidence.ts
+      - name: Upload mobile Javascript bundle for review
+        uses: actions/upload-artifact@v4
+        with:
+          name: BSNG-v0.6-android-js-results-bundle
+          path: /tmp/bsng-results-ota-check
+          retention-days: 14
