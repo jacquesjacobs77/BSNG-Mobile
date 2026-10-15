@@ -1,0 +1,65 @@
+name: Publish verified BSNG v0.6 Results OTA to preview
+on:
+  push:
+    branches:
+      - feature/bsng-coordinate-resolved-results-v0.6
+    paths:
+      - .github/workflows/publish-v06-preview-ota.yml
+
+permissions:
+  contents: read
+
+concurrency:
+  group: bsng-preview-ota-publish
+  cancel-in-progress: false
+
+jobs:
+  verified-preview-publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      CI: "true"
+      EXPO_TOKEN: ${{ secrets.BSNG_STUDIO_GITHUB_UPDATES }}
+    steps:
+      - name: Confirm no new native runtime is required
+        run: |
+          if [ -z "$EXPO_TOKEN" ]; then
+            echo "::error::Existing Expo update secret unavailable."
+            exit 1
+          fi
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify exact preview channel, app runtime and native dependency invariance
+        run: |
+          node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict';
+          import {readFileSync} from 'node:fs';
+          const app=JSON.parse(readFileSync('app.json','utf8')).expo;
+          const pkg=JSON.parse(readFileSync('package.json','utf8'));
+          assert.equal(app.version,'0.2.0');
+          assert.equal(app.updates.requestHeaders['expo-channel-name'],'preview');
+          assert.equal(app.runtimeVersion.policy,'appVersion');
+          assert.equal(pkg.version,'0.2.0');
+          assert.equal(app.extra.eas.projectId,'0169fa50-1d3c-41d9-9109-fc7ae3f58e07');
+          console.log('PREVIEW CHANNEL AND INSTALLED APP RUNTIME MATCH.');
+          NODE
+      - name: Install and run all test and type checks
+        run: |
+          npm install --no-audit --no-fund
+          npm run check
+          npm test
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - name: Generate graphics needed by Expo
+        run: |
+          python -m pip install Pillow==11.3.0
+          python scripts/generate_assets.py
+      - uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.BSNG_STUDIO_GITHUB_UPDATES }}
+      - name: Publish v0.6 audited genomic Results panel to Android preview OTA
+        run: eas update --channel preview --platform android --message "BSNG v0.6 verified real chr19 GUIDE-seq genomic results and biological evidence tabs" --non-interactive
