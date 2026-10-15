@@ -1,0 +1,126 @@
+name: BSNG v0.7 Active GRCh38 Research Run
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/bsng-v07-active-research.yml'
+  workflow_dispatch:
+    inputs:
+      chromosome:
+        description: 'Human GRCh38 chromosome (1-22, X, Y, MT)'
+        required: true
+        default: 'X'
+        type: string
+      start:
+        description: 'First genomic coordinate, 1-based inclusive'
+        required: true
+        default: '1000000'
+        type: string
+      length:
+        description: 'Number of genuine GRCh38 reference bases'
+        required: true
+        default: '10000000'
+        type: choice
+        options:
+          - '100000'
+          - '1000000'
+          - '10000000'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: bsng-v07-public-reference-registry
+  cancel-in-progress: false
+
+jobs:
+  public-genome-analysis:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      BSNG_CHROMOSOME: ${{ inputs.chromosome || 'X' }}
+      BSNG_START: ${{ inputs.start || '1000000' }}
+      BSNG_LENGTH: ${{ inputs.length || '10000000' }}
+      BSNG_CODE_BRANCH: feature/bsng-active-research-v0.7
+    steps:
+      - name: Check out audited scientific application code (not the registry branch)
+        uses: actions/checkout@v4
+        with:
+          ref: feature/bsng-active-research-v0.7
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Record exact science code revision checked out for this job
+        shell: bash
+        run: |
+          echo "BSNG_CODE_REVISION=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
+          echo "Running reviewed v0.7 research engine from $(git rev-parse HEAD)"
+      - name: Install and verify every scientific regression and mobile type check
+        run: |
+          npm install --no-audit --no-fund
+          npm run check
+          npm test
+      - name: Analyze user-selected authentic GRCh38 genomic region (maximum 10M)
+        run: node scripts/run_active_grch38_job.mjs
+      - name: Audit scientific integrity, provenance, coordinates, and measured-claim boundaries
+        run: |
+          node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict';
+          import {readFileSync} from 'node:fs';
+          const r=JSON.parse(readFileSync('artifacts/BSNG-active-report.json','utf8'));
+          const e=JSON.parse(readFileSync('artifacts/BSNG-active-index-entry.json','utf8'));
+          const region=r.source;
+          assert.equal(region.type,'REAL_HUMAN_PUBLIC_REFERENCE');
+          assert.equal(region.assembly,'GRCh38');
+          assert.equal(r.codeCommit,process.env.BSNG_CODE_REVISION);
+          assert.equal(region.bases,Number(process.env.BSNG_LENGTH));
+          assert.equal(region.start1BasedInclusive,Number(process.env.BSNG_START));
+          assert.equal(r.analysis.naturalProteinMotifScreen.allWindowsAccountedFor,true);
+          assert.equal(r.analysis.naturalProteinMotifScreen.examinedBases,region.bases);
+          assert.ok(r.analysis.naturalProteinMotifScreen.candidates.every(s=>
+            s.start1BasedInclusive>=region.start1BasedInclusive &&
+            s.end1BasedInclusive<=region.end1BasedInclusive &&
+            s.measuredBsngBinding===false && s.measuredIntegration===false));
+          assert.equal(r.evidence.jointBsngHybridRecognition,'NOT_ASSESSABLE');
+          assert.equal(r.evidence.genomicIntegrationFeasibility,'NOT_ASSESSABLE');
+          assert.equal(e.runId,r.runId);
+          assert.ok(region.chunks.every(c=>c.ensemblIdentifier.startsWith('chromosome:GRCh38:')));
+          console.log('PUBLIC HUMAN GENOME SCIENTIFIC REPORT VERIFIED; NO PHYSICAL NANITE CLAIMS');
+          NODE
+      - name: Publish audited JSON reports into separate persistent public Git branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          registry="/tmp/bsng-v07-public-reports"
+          mkdir -p "$registry"
+          if git ls-remote --exit-code --heads origin research-results-v07 >/dev/null 2>&1; then
+            git fetch origin research-results-v07
+            git worktree add --detach "$registry" FETCH_HEAD
+          else
+            git worktree add --detach "$registry"
+            (cd "$registry" && git switch --orphan research-results-v07)
+          fi
+          node scripts/publish_v07_result.mjs "$registry" "$GITHUB_WORKSPACE"
+          git -C "$registry" config user.name 'github-actions[bot]'
+          git -C "$registry" config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git -C "$registry" add --all
+          if git -C "$registry" diff --cached --quiet; then
+            echo "This exact research report was already committed."
+          else
+            git -C "$registry" commit -m "Archive auditable BSNG GRCh38 run ${{ github.run_id }} attempt ${{ github.run_attempt }}"
+            git -C "$registry" push origin HEAD:refs/heads/research-results-v07
+          fi
+          echo "Registry: https://raw.githubusercontent.com/$GITHUB_REPOSITORY/research-results-v07/index.json"
+      - name: Archive full reference FASTA, per-chunk checksums, and machine-readable report
+        uses: actions/upload-artifact@v4
+        with:
+          name: BSNG-Active-GRCh38-Run-${{ github.run_id }}
+          path: |
+            artifacts/BSNG-active-report.json
+            artifacts/BSNG-active-index-entry.json
+            artifacts/*-GRCh38-reference.fa.gz
+            docs/bsng-v07-active-research-protocol.md
+          if-no-files-found: error
+          retention-days: 30
