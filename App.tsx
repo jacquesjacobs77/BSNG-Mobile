@@ -3,6 +3,7 @@ import { Alert, ScrollView, Share, StatusBar, StyleSheet, Text, TextInput, Touch
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { analyzeSequence, normalizeSequence, SAMPLE_SEQUENCE, DEMO_MAX_BASES, type SequenceSummary } from './src/lib/sequence';
 import ResearchScreen from './src/screens/ResearchScreen';
+import BiologicalEvidencePanel from './src/screens/BiologicalEvidencePanel';
 
 type Page = 'overview' | 'scan' | 'research' | 'nanite' | 'results' | 'notes' | 'settings';
 type Note = { id: number; title: string; body: string };
@@ -113,7 +114,8 @@ function AppBody() {
     </Box>
   </>;}
   function results(){return <>
-    <Title eyebrow="module 03 / report" title="Results & Reports" detail="Deterministic GC statistics from this session; no biological binding model."/>
+    <Title eyebrow="module 03 / evidence registry" title="Results & Reports" detail="Published human-genome reference evidence, with a separate local GC composition demonstration. No physical BSNG nanite binding has been experimentally validated."/>
+    <BiologicalEvidencePanel/>
     {!result?<Box><Tag text="NO RESULTS" color={colors.amber}/>{para('Run the local sequence demo to create a composition report.')}<Button label="OPEN SEQUENCE ANALYSIS" onPress={()=>setPage('scan')}/></Box>:<>
       <View style={s.grid}>
         <View style={[s.metric,{width:half?'48.7%':'100%'}]}><Text style={s.dim}>LENGTH</Text><Text style={s.value}>{result.length+' bp'}</Text></View>
