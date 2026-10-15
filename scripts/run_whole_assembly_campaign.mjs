@@ -13,7 +13,14 @@ const dir=process.env.BSNG_CAMPAIGN_DIR||'artifacts/bsng-grch38-p14-campaign';
 const plan=JSON.parse(await readFile(join(dir,'whole-assembly-plan.json'),'utf8'));
 verifyPlan(plan);
 const input=process.env.BSNG_REFSEQ_FASTA,idx=process.env.BSNG_REFSEQ_FAI;
-const expected=process.env.BSNG_EXPECTED_FASTA_SHA256;
+const freeze=JSON.parse(await readFile(join(dir,'reference-fasta-freeze.json'),'utf8'));
+if(freeze.status!=='FASTA_SOURCE_VERIFIED_LOCALLY_NOT_YET_GENOME_SCANNED'||
+   freeze.assemblyPlanSha256!==plan.planSha256||
+   !/^[a-f0-9]{64}$/.test(freeze.fullUncompressedFastaSha256))
+ throw Error('Refusing unverified or mismatched official RefSeq FASTA');
+const expected=freeze.fullUncompressedFastaSha256;
+if(process.env.BSNG_EXPECTED_FASTA_SHA256&&process.env.BSNG_EXPECTED_FASTA_SHA256!==expected)
+ throw Error('Optional explicit FASTA SHA-256 disagrees with official verified frozen source');
 const budget=process.env.BSNG_BATCH_BUDGET||'1';
 const maxBatches=budget==='all'?plan.totalBatches:Number(budget);
 const outputDir=process.env.BSNG_RESEARCH_STORAGE_DIR||join(dir,'research-records');
