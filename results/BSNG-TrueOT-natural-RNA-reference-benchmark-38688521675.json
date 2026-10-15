@@ -1,0 +1,69 @@
+{
+  "schemaVersion": 1,
+  "title": "Fixed baseline RNA-guided natural Cas9 reference evaluated against experimentally observed TrueOT labels",
+  "date": "2026-10-15",
+  "researchScope": "PUBLISHED_NATURAL_RNA_GUIDED_NUCLEASE_REFERENCE_ONLY_NOT_BSNG_NANITE",
+  "evidenceTier": "RETROSPECTIVE_COMPUTATIONAL_DISCRIMINATION_OF_EXPERIMENTAL_ACTIVITY_LABELS",
+  "source": {
+    "publisher": "baolab-rice/CRISPR_OT_scoring",
+    "repositoryCommit": "4ff0ccd2493de3dc658747d05fa6bb4fe12ea2c7",
+    "dataPath": "custom_scoring/parsed_datasets/TrueOT/TrueOT_1806uniqueTriplet_gRNA_OT_label.csv",
+    "sourceGitBlobSha1": "8cd903a85c123105daed641a2579d2e161009d38",
+    "exactCsvSha256": "135b8e47153168981508311934e5dfd66702db1b58250cca7634955be8c5a532",
+    "publishedReference": "https://github.com/baolab-rice/CRISPR_OT_scoring",
+    "hasGenomeAssemblyOrCoordinates": false
+  },
+  "method": {
+    "preregistration": "docs/rna-guided-spcas9-trueot-preregistration-v0.5.md",
+    "fittedToLabels": false,
+    "sequenceSimilarity": "Negative Hamming distance of first 20 characters of length-23 guide/DNA pair",
+    "equalLengthAndAlphabetFilter": true,
+    "noMismatchedLengthAlignment": true,
+    "bootstrapByGuide": {
+      "seed": 1729,
+      "iterations": 500
+    },
+    "primaryStatistic": "Macro-average per-guide AUROC over guides with both labels"
+  },
+  "cohort": {
+    "publishedRows": 1806,
+    "originalActiveLabels": 250,
+    "originalInactiveLabels": 1556,
+    "totalDistinctGuideSequences": 36,
+    "scoredRows": 1579,
+    "excludedRows": 227,
+    "eligibleMixedClassGuides": 33
+  },
+  "findings": {
+    "primaryMacroAuc": 0.7946374362465487,
+    "guideBootstrap95PercentileCI": [
+      0.7461383275819828,
+      0.8463206808454561
+    ],
+    "pooledAuc": 0.7266896938013443,
+    "pooledGcContentComparatorAuc": 0.673791075429425,
+    "resultInterpretation": "Fixed sequence similarity has discriminatory capacity for curated off-target activity labels. The result is retrospective, is subject to source-study heterogeneity, and does not estimate binding affinity or predict BSNG nanite behavior."
+  },
+  "reproduction": {
+    "githubActionsRun": "https://github.com/jacquesjacobs77/BSNG-Mobile/actions/runs/38688521675",
+    "testCommit": "60cf9408371d4a4def429415671650f0f54f3277",
+    "testsPassed": 40,
+    "testsFailed": 0,
+    "fullMachineReadableArtifact": "BSNG-TrueOT-natural-RNA-guided-biological-reference",
+    "artifactRetentionDays": 30
+  },
+  "scientificLimitations": [
+    "TrueOT contains experimentally derived cleavage/editing activity labels, not direct binding-affinity measurements.",
+    "No genomic locations or reference assembly are in the three-column curated CSV; do not infer overlap with chrX 10M reference.",
+    "Published activity observations are from heterogeneous studies and may vary by experimental context.",
+    "Only 23/23 ACGT-only pairs were scored; 227 observations excluded under preregistered rule.",
+    "Sequence distance is a naive, untrained baseline not a complete guide-RNA/Cas9 physical interaction model.",
+    "No candidate RNA-guide design or novel genomic targeting recommendation is produced.",
+    "No combined BSNG nanite recognition/integration was physically or computationally validated."
+  ],
+  "claims": {
+    "physicalBSNGNaniteDemonstrated": false,
+    "physicalBSNGHybridBindingTested": false,
+    "safeIntegrationEstablished": false
+  }
+}
