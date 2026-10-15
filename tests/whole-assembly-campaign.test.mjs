@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {mkdtemp,writeFile,readFile,rm,unlink} from 'node:fs/promises';
+import {mkdtemp,writeFile,readFile,rm,unlink,mkdir} from 'node:fs/promises';
 import {join} from 'node:path';
 import {tmpdir} from 'node:os';
 import {createHash} from 'node:crypto';
@@ -165,6 +165,39 @@ test('verified campaign resumes in order, heals receipt-before-ledger interrupti
  assert.equal(ledger.completedBatchIds.length,plan.totalBatches);
  assert.equal(ledger.coverage.status,'COMPLETE');
  assert.ok(ledger.coverage.candidateCountVerified>0);
+});
+test('GenBank-only rows are explicitly listed and block claims of whole-assembly representation completion',()=>{
+ const extra='GCA_ONLY\tunlocalized-scaffold\t11\tChromosome\tKI270721.1\tna\tna\tPrimary Assembly\t100316\tna\n';
+ const parsed=parseAssemblyReport(createReport()+extra);
+ assert.equal(parsed.excludedSequences.length,1);
+ assert.equal(parsed.excludedSequences[0].genbankAccession,'KI270721.1');
+ const plan=planWholeAssembly(parsed,{maxBases:50});
+ assert.equal(plan.excludedGenbankOnlySequenceCount,1);
+ assert.equal(plan.excludedGenbankOnlyBases,100316);
+ assert.equal(verifyPlan(plan),true);
+ const covered=plan.batches.map(x=>({batchId:x.id,planSha256:plan.planSha256,
+  contig:x.refseqAccession,ownedBases:x.ownedBases,
+  validWindows:x.ownedBases,ambiguousWindows:0,terminalUnscorableStarts:0,
+  qualifyingCandidateCount:0}));
+ const status=campaignCoverage(plan,covered);
+ assert.equal(status.status,'REFSEQ_SCOPE_COMPLETE_GENBANK_ONLY_REMAIN');
+ assert.equal(status.allAssemblyReportRepresentationsComplete,false);
+ assert.equal(status.excludedGenbankOnlyBases,100316);
+});
+test('unverified partial candidate output is safely recomputed rather than blocking resume',async t=>{
+ const fx=await makeFixture();t.after(()=>rm(fx.root,{recursive:true,force:true}));
+ const plan=getPlan(),dir=join(fx.root,'crash-recovery');
+ await mkdir(dir,{recursive:true});
+ const batch=plan.batches[0],path=join(dir,batch.id+'.candidates.ndjson.gz.part');
+ await writeFile(path,'PARTIAL UNVERIFIED DATA MUST NEVER COUNT');
+ const file=await open(fx.fasta,'r');
+ try{
+  const result=await scanCtcfBatch({fh:file,fai:await loadFai(fx.fai),batch,
+   outputDir:dir,planSha256:plan.planSha256,sourceFastaSha256:fx.sha,readBases:20});
+  assert.equal(result.status,'VERIFIED_STORED');
+  assert.equal(result.validWindows+result.ambiguousWindows+result.terminalUnscorableStarts,batch.ownedBases);
+  await assert.rejects(()=>readFile(path),{code:'ENOENT'});
+ }finally{await file.close()}
 });
 test('pinned FASTA hash mismatch blocks source, corrupt receipt cannot be silently skipped, concurrent lock is rejected',async t=>{
  const fx=await makeFixture();t.after(()=>rm(fx.root,{recursive:true,force:true}));
