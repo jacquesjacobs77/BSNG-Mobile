@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 1,
+  "referenceBenchmarkSummaryDate": "2026-10-15",
+  "purpose": "Do not conflate known natural biological reference systems with an uncharacterized hypothetical BSNG RNA-protein hybrid.",
+  "actualHumanGenomeAnalysis": {
+    "organism": "Homo sapiens",
+    "assembly": "GRCh38",
+    "chromosome": "X",
+    "start1BasedInclusive": 1000000,
+    "end1BasedInclusive": 10999999,
+    "bases": 10000000,
+    "sequenceSha256": "5bc91fa875ca7c069548838d1fef58a32d527d59211fb28c74331e1369f71953",
+    "evidence": "https://github.com/jacquesjacobs77/BSNG-Mobile/actions/runs/38640324650"
+  },
+  "naturalProteinReference": {
+    "molecule": "CTCF",
+    "model": "JASPAR MA0139.1",
+    "measurements": "ENCODE K562 ChIP-seq ENCSR000AKO",
+    "experimentFile": "ENCFF519CXF",
+    "sampleCount": 88,
+    "auc": 0.8702221074380165,
+    "coordinatesAvailable": true,
+    "result": "results/BSNG-CTCF-K562-GRCh38-X-10M-reference-benchmark-38684724899.json"
+  },
+  "naturalRNAProteinReference": {
+    "molecularSystem": "Published Cas9/guide-RNA systems from heterogeneous TrueOT curated experimental sources",
+    "readout": "Experimental nuclease off-target activity label, not DNA-binding affinity",
+    "sourceFile": "TrueOT_1806uniqueTriplet_gRNA_OT_label.csv",
+    "sourceGenomeCoordinatesAvailable": false,
+    "sourceGenomeAssemblyKnownFromCsv": false,
+    "primaryMacroGuideAuc": 0.7946374362465487,
+    "eligibleGuideGroups": 33,
+    "result": "results/BSNG-TrueOT-natural-RNA-reference-benchmark-38688521675.json"
+  },
+  "jointInterpretation": {
+    "naturalCas9GuideRnaIsAnEstablishedRnaProteinComplex": true,
+    "distinctProteinOnlyCtcfReferenceIsNotAPartOfBSNGConstruct": true,
+    "crossBenchmarkAucValuesAreNotInterchangeable": true,
+    "additiveOrMultiplicativeHybridScoreScientificallyValid": false,
+    "publishedBSNGHybridMoleculeSpecified": false,
+    "measuredPhysicalBSNGHybridRecognition": false,
+    "bsngHybridStatus": "NOT_ASSESSABLE",
+    "bsngIntegrationStatus": "NOT_ASSESSABLE",
+    "nextRequiredEvidence": "Specific physical BSNG recognition complex and independent experimentally measured joint outcomes for molecular interaction, plus separate integration observations if proposed."
+  },
+  "softwareRelease": {
+    "availableInDevelopmentBranchOnly": true,
+    "androidOtaPublished": false,
+    "androidApkReinstalled": false
+  }
+}
