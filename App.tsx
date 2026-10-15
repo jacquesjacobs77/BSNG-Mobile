@@ -4,6 +4,7 @@ import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { analyzeSequence, normalizeSequence, SAMPLE_SEQUENCE, DEMO_MAX_BASES, type SequenceSummary } from './src/lib/sequence';
 import ResearchScreen from './src/screens/ResearchScreen';
 import BiologicalEvidencePanel from './src/screens/BiologicalEvidencePanel';
+import ActiveGenomeResearchPanel from './src/screens/ActiveGenomeResearchPanel';
 
 type Page = 'overview' | 'scan' | 'research' | 'nanite' | 'results' | 'notes' | 'settings';
 type Note = { id: number; title: string; body: string };
@@ -69,7 +70,7 @@ function AppBody() {
     </Box>
     <View style={s.grid}>
       <View style={[s.metric,{width:half?'48.7%':'100%'}]}><Text style={s.dim}>LOCAL DEMO LIMIT</Text><Text style={s.value}>5,000 bp</Text></View>
-      <View style={[s.metric,{width:half?'48.7%':'100%'}]}><Text style={s.dim}>BACKEND BATCH TARGET</Text><Text style={[s.value,{color:colors.purple}]}>15M bp</Text></View>
+      <View style={[s.metric,{width:half?'48.7%':'100%'}]}><Text style={s.dim}>CLOUD PUBLIC REFERENCE MAX</Text><Text style={[s.value,{color:colors.purple}]}>10M bp</Text></View>
     </View>
     <Text style={s.eyebrow}>WORKSPACES</Text>
     <View style={s.grid}>
@@ -114,9 +115,10 @@ function AppBody() {
     </Box>
   </>;}
   function results(){return <>
-    <Title eyebrow="module 03 / evidence registry" title="Results & Reports" detail="Published human-genome reference evidence, with a separate local GC composition demonstration. No physical BSNG nanite binding has been experimentally validated."/>
+    <Title eyebrow="module 03 / active genomic research" title="Results & Reports" detail="Run new analyses on authentic human GRCh38 reference DNA, save auditable computational findings, and compare existing natural biological evidence. Physical BSNG nanite binding remains untested."/>
+    <ActiveGenomeResearchPanel/>
     <BiologicalEvidencePanel/>
-    {!result?<Box><Tag text="NO RESULTS" color={colors.amber}/>{para('Run the local sequence demo to create a composition report.')}<Button label="OPEN SEQUENCE ANALYSIS" onPress={()=>setPage('scan')}/></Box>:<>
+    {!result?<Box><Tag text="NO LOCAL SEQUENCE DEMO YET" color={colors.amber}/>{para('This is separate from completed cloud genomic research reports above. Run a local sequence demo to calculate GC composition here.')}<Button label="OPEN SEQUENCE ANALYSIS" onPress={()=>setPage('scan')}/></Box>:<>
       <View style={s.grid}>
         <View style={[s.metric,{width:half?'48.7%':'100%'}]}><Text style={s.dim}>LENGTH</Text><Text style={s.value}>{result.length+' bp'}</Text></View>
         <View style={[s.metric,{width:half?'48.7%':'100%'}]}><Text style={s.dim}>GC CONTENT</Text><Text style={s.value}>{(result.gcFraction*100).toFixed(1)+'%'}</Text></View>
@@ -158,11 +160,11 @@ function AppBody() {
       {para('Local GC demo: active')}
       {para('JASTUDIO AI Brain: not connected')}
       {para('BSNG desktop simulator: not connected')}
-      {para('Research database: not connected')}
-      {para('Reference genome: not loaded')}
+      {para('Public cloud report registry: GitHub research-results-v07')}
+      {para('Cloud GRCh38 reference analysis: available through GitHub research runner')}
     </Box>
     <Box><Text style={[s.eyebrow,{color:colors.purple}]}>PLANNED BACKEND TARGETS</Text>
-      {para('15M-base streaming batches • persisted checkpoints • authenticated AI assistance • immutable analysis history • reference validation.')}
+      {para('10M-base Ensembl GRCh38 cloud analysis • public GitHub report history • model transparency • physical BSNG recognition still unmeasured.')}
     </Box>
     <Box><Text style={s.dim}>DATA PROTECTION</Text>
       {para('Do not add identifiable human genomic data or API keys to this prototype. No network data submission or permanent notes storage is provided.')}
@@ -186,7 +188,7 @@ function AppBody() {
       </View>}
       <ScrollView style={{flex:1}} keyboardShouldPersistTaps="handled" contentContainerStyle={s.scroll}>
         <View style={{width:'100%',maxWidth:980,alignSelf:'center'}}>{screens[page]()}
-          <Text style={[s.dim,{textAlign:'center',marginTop:25}]}>BSNG / RESEARCH SANDBOX • v0.2</Text>
+          <Text style={[s.dim,{textAlign:'center',marginTop:25}]}>BSNG / RESEARCH INTERFACE v0.7 · NATIVE APP v0.2.0</Text>
         </View>
       </ScrollView>
     </View>
