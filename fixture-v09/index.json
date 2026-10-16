@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "id": "0b6b4bb4c38a8fb49fc8",
+  "campaignType": "SYNTHETIC_TEST_FIXTURE",
+  "assembly": "GRCh38.p14",
+  "sourcePlanSha256": "0167eb47cf84c149ff35839cb1fd701443dd1531fab5201af997abe2e05a405b",
+  "sourceFastaSha256": "bd3f66686274958ecdc3c3161c263a906c6d503a57dc1fcd639513b92ee1a79a",
+  "modelPfmSha256": "6ba2272c8b307e38e30768ca36aa12118fa1c69db428ed2048bebe1f2abb41a4",
+  "naturalCtcfThresholdLog2Odds": 15,
+  "scientificStatus": "SYNTHETIC_WORKFLOW_TEST_NOT_REAL_HUMAN_DATA",
+  "sourceCodeCommit": "0f2c1339526120eba907e4f696d7c1ef8b40d54b",
+  "releaseTagPrefix": "bsng-v09-fixture-0b6b4bb4c38a8fb49fc8",
+  "receipts": [],
+  "coverage": {
+    "status": "INCOMPLETE",
+    "excludedGenbankOnlySequenceCount": 0,
+    "excludedGenbankOnlyBases": 0,
+    "allAssemblyReportRepresentationsComplete": false,
+    "completedBatches": 0,
+    "totalBatches": 106,
+    "completedOwnedBases": 0,
+    "totalOwnedBases": 3245,
+    "coverageByTrack": {
+      "A_CHROMOSOMES": {
+        "completedBatches": 0,
+        "totalBatches": 98,
+        "completedOwnedBases": 0,
+        "totalOwnedBases": 2993,
+        "coveredFraction": 0
+      },
+      "B_REMAINING_PRIMARY": {
+        "completedBatches": 0,
+        "totalBatches": 4,
+        "completedOwnedBases": 0,
+        "totalOwnedBases": 118,
+        "coveredFraction": 0
+      },
+      "C_ALTERNATES_PATCHES": {
+        "completedBatches": 0,
+        "totalBatches": 4,
+        "completedOwnedBases": 0,
+        "totalOwnedBases": 134,
+        "coveredFraction": 0
+      }
+    },
+    "overallFraction": 0,
+    "candidateCountVerified": 0,
+    "bsngPhysicalBindingStatus": "NOT_ASSESSABLE",
+    "excludedFromCompleteness": "FASTA may contain N; genomic-start coordinates are still explicitly accounted for"
+  },
+  "status": "NOT_STARTED",
+  "operationalWarnings": [
+    "GitHub workflow cache is disposable; original FASTA must be verified on each newly built source cache.",
+    "GitHub Release assets are versioned research artifacts, not a transactional genomic database.",
+    "No BSNG nanite physical binding or genomic insertion safety is measured."
+  ]
+}
