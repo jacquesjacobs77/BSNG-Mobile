@@ -1,10 +1,5 @@
 name: BSNG v0.9 real GRCh38 RefSeq GitHub Actions continuous campaign pilot
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - '.github/workflows/bsng-v09-refseq-github-continuation.yml'
   workflow_dispatch:
     inputs:
       mode:
@@ -47,7 +42,9 @@ jobs:
       - name: Check out v0.9 research implementation, leaving Android app untouched
         uses: actions/checkout@v4
         with:
-          ref: feature/bsng-github-continuation-v0.9
+          # Pin the exact successfully validated 10M scientific engine revision.
+          # Future Android UI edits must not silently change the genome model.
+          ref: e91c8d85b0c92d56666383e9e7e3a36d0133d391
           persist-credentials: true
       - uses: actions/setup-node@v4
         with:
@@ -98,12 +95,12 @@ jobs:
           if-no-files-found: error
           retention-days: 30
       - name: Safely schedule at most one more bounded verified cloud run when budgeted
-        # The first push-backed supervised pilot may prove ONE automatic handoff;
-        # manually requested workflows can similarly authorize at most two.
+        # Future runs are MANUAL starts only; once started with an authorized
+        # count, workflow_dispatch may queue at most two successor jobs.
         # No unbounded recurrence is possible: the counter decreases to 0.
-        if: ${{ success() && (github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.mode == 'scan-one-batch' && inputs.automatic_followup_jobs != '0')) }}
+        if: ${{ success() && github.event_name == 'workflow_dispatch' && inputs.mode == 'scan-one-batch' && inputs.automatic_followup_jobs != '0' }}
         env:
-          CURRENT_REMAINING: ${{ github.event_name == 'push' && '1' || inputs.automatic_followup_jobs }}
+          CURRENT_REMAINING: ${{ inputs.automatic_followup_jobs }}
         run: |
           set -euo pipefail
           test "$CURRENT_REMAINING" -ge 1
