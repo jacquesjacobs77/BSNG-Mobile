@@ -5,6 +5,7 @@ import { analyzeSequence, normalizeSequence, SAMPLE_SEQUENCE, DEMO_MAX_BASES, ty
 import ResearchScreen from './src/screens/ResearchScreen';
 import BiologicalEvidencePanel from './src/screens/BiologicalEvidencePanel';
 import ActiveGenomeResearchPanel from './src/screens/ActiveGenomeResearchPanel';
+import WholeGenomeCampaignPanel from './src/screens/WholeGenomeCampaignPanel';
 
 type Page = 'overview' | 'scan' | 'research' | 'nanite' | 'results' | 'notes' | 'settings';
 type Note = { id: number; title: string; body: string };
@@ -116,6 +117,7 @@ function AppBody() {
   </>;}
   function results(){return <>
     <Title eyebrow="module 03 / active genomic research" title="Results & Reports" detail="Run new analyses on authentic human GRCh38 reference DNA, save auditable computational findings, and compare existing natural biological evidence. Physical BSNG nanite binding remains untested."/>
+    <WholeGenomeCampaignPanel/>
     <ActiveGenomeResearchPanel/>
     <BiologicalEvidencePanel/>
     {!result?<Box><Tag text="NO LOCAL SEQUENCE DEMO YET" color={colors.amber}/>{para('This is separate from completed cloud genomic research reports above. Run a local sequence demo to calculate GC composition here.')}<Button label="OPEN SEQUENCE ANALYSIS" onPress={()=>setPage('scan')}/></Box>:<>
