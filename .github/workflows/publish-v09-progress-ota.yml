@@ -1,0 +1,86 @@
+name: BSNG v0.9 publish whole-genome cloud campaign progress to Android preview
+on:
+  push:
+    branches:
+      - feature/bsng-github-continuation-v0.9
+    paths:
+      - '.github/workflows/publish-v09-progress-ota.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: bsng-v09-safe-android-preview-ota
+  cancel-in-progress: false
+
+jobs:
+  publish-verified-campaign-progress:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      CI: 'true'
+      EXPO_TOKEN: ${{ secrets.BSNG_STUDIO_GITHUB_UPDATES }}
+    steps:
+      - name: Check Expo token is configured without exposing it
+        run: |
+          test -n "$EXPO_TOKEN" || (echo "::error::Expo preview token unavailable" && exit 1)
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate the existing native APK OTA compatibility and new public campaign view
+        run: |
+          node --input-type=module <<'NODE'
+          import {readFileSync} from 'node:fs';
+          import assert from 'node:assert/strict';
+          const app=JSON.parse(readFileSync('app.json','utf8')).expo;
+          assert.equal(app.version,'0.2.0');
+          assert.equal(app.runtimeVersion.policy,'appVersion');
+          assert.equal(app.updates.requestHeaders['expo-channel-name'],'preview');
+          assert.equal(app.extra.eas.projectId,'0169fa50-1d3c-41d9-9109-fc7ae3f58e07');
+          const code=readFileSync('src/screens/WholeGenomeCampaignPanel.tsx','utf8');
+          assert.match(code,/bsng-v09-real-ctcf-checkpoints/);
+          assert.match(code,/NATURAL_CTCF_REFERENCE_COMPUTATION_NOT_BSNG_BINDING/);
+          assert.match(code,/NOT ASSESSABLE/);
+          assert.match(readFileSync('App.tsx','utf8'),/WholeGenomeCampaignPanel/);
+          console.log('BSNG v0.9 is a JS-only update compatible with installed Android APK runtime 0.2.0');
+          NODE
+      - name: Validate three authentic source-checked 10M GRCh38.p14 batches exist before publish
+        run: |
+          curl --fail --silent --show-error --max-time 25 \
+            'https://raw.githubusercontent.com/jacquesjacobs77/BSNG-Mobile/bsng-v09-real-ctcf-checkpoints/grch38p14-natural-ctcf-v09/index.json' \
+            -o /tmp/bsng-v09-mobile-real-checkpoint.json
+          node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict';
+          import {readFileSync} from 'node:fs';
+          const i=JSON.parse(readFileSync('/tmp/bsng-v09-mobile-real-checkpoint.json','utf8'));
+          assert.equal(i.campaignType,'REAL_REFERENCE');
+          assert.equal(i.assembly,'GRCh38.p14');
+          assert.equal(i.coverage.totalBatches,1003);
+          assert.ok(i.coverage.completedBatches>=3);
+          assert.ok(i.coverage.completedOwnedBases>=30_000_000);
+          assert.equal(i.status,'INCOMPLETE');
+          assert.equal(i.sourceCodeCommit,'e91c8d85b0c92d56666383e9e7e3a36d0133d391');
+          assert.equal(i.scientificStatus,'NATURAL_CTCF_REFERENCE_COMPUTATION_NOT_BSNG_BINDING');
+          console.log('REAL PUBLIC GRCH38 REFERENCE DATA READY FOR READ-ONLY ANDROID VIEW');
+          NODE
+      - name: Install, compile all scientific tests and validate TypeScript
+        run: |
+          npm install --no-audit --no-fund
+          npm run check
+          npm test
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - name: Build existing branded Expo assets
+        run: |
+          python -m pip install Pillow==11.3.0
+          python scripts/generate_assets.py
+      - name: Verify complete Android JS bundle
+        run: npx expo export --platform android --output-dir /tmp/bsng-v09-preview --clear
+      - uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.BSNG_STUDIO_GITHUB_UPDATES }}
+      - name: Publish human-reference v0.9 cloud progression to installed Android preview channel
+        run: eas update --channel preview --platform android --message "BSNG v0.9 real GRCh38p14 full-reference GitHub checkpoint progress, three verified 10M cloud runs" --non-interactive
