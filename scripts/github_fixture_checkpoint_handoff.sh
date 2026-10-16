@@ -17,7 +17,6 @@ if [[ "${BSNG_HANDOFF_MODE:-}" != "fixture" ]]; then
  echo "::error::Handoff proof is synthetic fixture only. Do not treat as real human reference."
  exit 1
 fi
-mkdir -p "$BSNG_CHECKPOINT_WORKTREE"
 if git ls-remote --exit-code --heads origin "$BRANCH" >/dev/null 2>&1; then
  git fetch origin "$BRANCH"
  git worktree add --detach "$BSNG_CHECKPOINT_WORKTREE" FETCH_HEAD
@@ -63,8 +62,8 @@ if ! gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
 fi
 # Never clobber assets. Previous upload could have succeeded even if the
 # receipt commit failed; the hash comparison below detects exact recovery.
-if ! gh release view "$TAG" --repo "$GITHUB_REPOSITORY" --json assets \
- | grep -Fq '"name":"'"$BSNG_BATCH_ID"'.candidates.ndjson.gz"'; then
+if ! gh release view "$TAG" --repo "$GITHUB_REPOSITORY" --json assets --jq '.assets[].name' \
+ | grep -Fxq "$BSNG_BATCH_ID.candidates.ndjson.gz"; then
  gh release upload "$TAG" "$asset" --repo "$GITHUB_REPOSITORY"
 fi
 # Verify release persistence by actually downloading the archived asset,
