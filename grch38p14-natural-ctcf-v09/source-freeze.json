@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "status": "FASTA_SOURCE_VERIFIED_LOCALLY_NOT_YET_GENOME_SCANNED",
+  "refseqAssemblyAccession": "GCF_000001405.40",
+  "assembly": "GRCh38.p14",
+  "sourceUrl": "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/405/GCF_000001405.40_GRCh38.p14/GCF_000001405.40_GRCh38.p14_genomic.fna.gz",
+  "md5ListUrl": "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/001/405/GCF_000001405.40_GRCh38.p14/md5checksums.txt",
+  "officialNcbiCompressedMd5": "c30471567037b2b2389d43c908c653e1",
+  "fullCompressedSha256": "11912a45a545bf01a10b2a7f10eb7a42924436b4d19b476b1899834fb7ba74a3",
+  "fullUncompressedFastaSha256": "df6e4918316e05a9cc1fd29c352841d3678b607d7a436819cd43371b52c814c0",
+  "indexedFaiSha256": "0afdd6ac2a873585725622de2310a55a5f6065b623a093467e7e26c66ba61de7",
+  "referenceCompressedBytes": 972898531,
+  "referenceUncompressedBytes": 3339739109,
+  "assemblyPlanSha256": "22c67ad85730b19c97725ddf913b41d6749b7169b880a5af6724b64dea513e50",
+  "sourceAssemblyReportSha256": "64318ddff470b69b261a667d813210044f60d4ce654253a547db80ff73638d38",
+  "refseqSequencesPresent": 705,
+  "notRepresentedInGcf": 4,
+  "note": "Validation of reference source bytes is necessary but does not establish any experimental BSNG binding.",
+  "frozenAt": "2026-10-16T09:56:09.572Z"
+}

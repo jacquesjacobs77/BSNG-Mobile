@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "id": "cd19fbf992d9bae65026",
+  "campaignType": "REAL_REFERENCE",
+  "assembly": "GRCh38.p14",
+  "sourcePlanSha256": "22c67ad85730b19c97725ddf913b41d6749b7169b880a5af6724b64dea513e50",
+  "sourceFastaSha256": "df6e4918316e05a9cc1fd29c352841d3678b607d7a436819cd43371b52c814c0",
+  "modelPfmSha256": "6ba2272c8b307e38e30768ca36aa12118fa1c69db428ed2048bebe1f2abb41a4",
+  "naturalCtcfThresholdLog2Odds": 15,
+  "scientificStatus": "NATURAL_CTCF_REFERENCE_COMPUTATION_NOT_BSNG_BINDING",
+  "sourceCodeCommit": "e91c8d85b0c92d56666383e9e7e3a36d0133d391",
+  "releaseTagPrefix": "bsng-v09-grch38-cd19fbf992d9bae65026",
+  "receipts": [],
+  "coverage": {
+    "status": "INCOMPLETE",
+    "excludedGenbankOnlySequenceCount": 4,
+    "excludedGenbankOnlyBases": 481426,
+    "allAssemblyReportRepresentationsComplete": false,
+    "completedBatches": 0,
+    "totalBatches": 1003,
+    "completedOwnedBases": 0,
+    "totalOwnedBases": 3298430636,
+    "coverageByTrack": {
+      "A_CHROMOSOMES": {
+        "completedBatches": 0,
+        "totalBatches": 323,
+        "completedOwnedBases": 0,
+        "totalOwnedBases": 3088286401,
+        "coveredFraction": 0
+      },
+      "B_REMAINING_PRIMARY": {
+        "completedBatches": 0,
+        "totalBatches": 166,
+        "completedOwnedBases": 0,
+        "totalOwnedBases": 11171206,
+        "coveredFraction": 0
+      },
+      "C_ALTERNATES_PATCHES": {
+        "completedBatches": 0,
+        "totalBatches": 514,
+        "completedOwnedBases": 0,
+        "totalOwnedBases": 198973029,
+        "coveredFraction": 0
+      }
+    },
+    "overallFraction": 0,
+    "candidateCountVerified": 0,
+    "bsngPhysicalBindingStatus": "NOT_ASSESSABLE",
+    "excludedFromCompleteness": "FASTA may contain N; genomic-start coordinates are still explicitly accounted for"
+  },
+  "status": "NOT_STARTED",
+  "operationalWarnings": [
+    "GitHub workflow cache is disposable; original FASTA must be verified on each newly built source cache.",
+    "GitHub Release assets are versioned research artifacts, not a transactional genomic database.",
+    "No BSNG nanite physical binding or genomic insertion safety is measured."
+  ]
+}
