@@ -58,7 +58,7 @@ export default function WholeGenomeCampaignPanel(){
     <View style={s.metric}><Text style={s.metricValue}>{comma(data.coverage.completedBatches)} / {comma(data.coverage.totalBatches)}</Text><Text style={s.metricLabel}>Archived verified batches</Text></View>
     <View style={s.metric}><Text style={s.metricValue}>{(data.coverage.overallFraction*100).toFixed(2)}%</Text><Text style={s.metricLabel}>RefSeq representation coverage</Text></View>
    </View>
-   <View style={s.bar}><View style={[s.barValue,{width:(Math.min(1,Math.max(0,data.coverage.overallFraction))*100)+'%'}]}/></View>
+   <View style={s.bar}><View style={[s.barValue,{width:((Math.min(1,Math.max(0,data.coverage.overallFraction))*100)+'%') as `${number}%`}]}/></View>
    <View style={s.metrics}>
     <View style={s.metric}><Text style={s.metricValue}>{comma(data.coverage.completedOwnedBases)}</Text><Text style={s.metricLabel}>Source bases accounted for</Text></View>
     <View style={s.metric}><Text style={s.metricValue}>{comma(data.coverage.candidateCountVerified)}</Text><Text style={s.metricLabel}>Archived exploratory CTCF motif matches</Text></View>
