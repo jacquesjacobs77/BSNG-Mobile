@@ -36,6 +36,13 @@ export function makeCampaignIndex(plan,{sourceFastaSha256,kind='REAL_REFERENCE',
     'No BSNG nanite physical binding or genomic insertion safety is measured.']
  };
 }
+/** At most 100 real candidate assets per GitHub Release, preventing 1000+ assets on one release. */
+export function candidateReleaseTag(plan,index,batchId){
+ const i=plan.batches.findIndex(x=>x.id===batchId);
+ if(i<0)throw Error('No such genome batch for release sharding');
+ if(index.campaignType==='SYNTHETIC_TEST_FIXTURE')return index.releaseTagPrefix;
+ return index.releaseTagPrefix+'-shard-'+String(Math.floor(i/100)).padStart(3,'0');
+}
 export function auditCampaignIndex(plan,index){
  verifyPlan(plan);
  if(index?.schemaVersion!==1||!safe.test(index.sourceFastaSha256)||
@@ -67,7 +74,7 @@ export function auditCampaignIndex(plan,index){
       row.status!=='VERIFIED_STORED'||
       !safe.test(row.compressedCandidateSha256)||
       !safe.test(row.uncompressedCandidateNdjsonSha256)||
-      row.compressedCandidateReleaseTag!==index.releaseTagPrefix||
+      row.compressedCandidateReleaseTag!==candidateReleaseTag(plan,index,row.batchId)||
       row.compressedCandidateAssetName!==row.batchId+'.candidates.ndjson.gz'||
       !Number.isSafeInteger(row.qualifyingCandidateCount)||row.qualifyingCandidateCount<0)
      throw Error('Invalid or unauditable GitHub candidate archive receipt '+row.batchId);
@@ -123,7 +130,7 @@ export function addPublishedReceipt(plan,index,receipt,{assetName,releaseTag,sou
     receipt.track!==expected.track||
     receipt.validWindows+receipt.ambiguousWindows+receipt.terminalUnscorableStarts!==expected.ownedBases||
     receipt.actualBsngBinding!=='NOT_ASSESSABLE'||receipt.actualGenomicIntegration!=='NOT_ASSESSABLE'||
-    assetName!==expected.id+'.candidates.ndjson.gz'||releaseTag!==index.releaseTagPrefix)
+    assetName!==expected.id+'.candidates.ndjson.gz'||releaseTag!==candidateReleaseTag(plan,index,expected.id))
    throw Error('Refuse to publish unsupported/unmatched science receipt');
  const promoted={...receipt,
   compressedCandidateAssetName:assetName,
