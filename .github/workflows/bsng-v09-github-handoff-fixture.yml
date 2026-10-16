@@ -1,0 +1,139 @@
+name: BSNG v0.9 GitHub Actions cross-job persistent scientific checkpoint proof
+on:
+  push:
+    branches:
+      - feature/bsng-github-continuation-v0.9
+    paths:
+      - 'src/lib/github-campaign-state.mjs'
+      - 'scripts/github_handoff_cli.mjs'
+      - 'scripts/build_github_handoff_fixture.mjs'
+      - 'scripts/github_fixture_checkpoint_handoff.sh'
+      - 'tests/github-campaign-state.test.mjs'
+      - '.github/workflows/bsng-v09-github-handoff-fixture.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: bsng-v09-fixture-cross-job-checkpoints
+  cancel-in-progress: false
+
+jobs:
+  scientific-regressions:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Run TypeScript checks and all scientific tests
+        run: |
+          npm install --no-audit --no-fund
+          npm run check
+          npm test
+      - name: Verify this is clearly labeled synthetic fixture, not real human data
+        run: |
+          node scripts/build_github_handoff_fixture.mjs
+          node --input-type=module <<'NODE'
+          import {readFileSync} from 'node:fs';
+          import assert from 'node:assert/strict';
+          const root='/tmp/bsng-v09-handoff-fixture/';
+          const src=JSON.parse(readFileSync(root+'fixture-source.json','utf8'));
+          const plan=JSON.parse(readFileSync(root+'whole-assembly-plan.json','utf8'));
+          assert.equal(src.type,'SYNTHETIC_TEST_FIXTURE_NOT_REAL_HUMAN_REFERENCE');
+          assert.equal(plan.trackSequenceCounts.A_CHROMOSOMES,25);
+          assert.ok(plan.trackTotals.B_REMAINING_PRIMARY.batches>0);
+          assert.ok(plan.trackTotals.C_ALTERNATES_PATCHES.batches>0);
+          assert.ok(plan.totalBatches>2);
+          console.log('FICTIONAL TEST DNA ONLY. NO GRCh38 WHOLE-GENOME SCAN.');
+          NODE
+
+  runner-one:
+    name: 'Independent GitHub cloud runner A: publish candidate and durable receipt'
+    needs: scientific-regressions
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      GH_TOKEN: ${{ github.token }}
+      BSNG_HANDOFF_MODE: fixture
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Generate deterministic synthetic FASTA on fresh VM
+        run: node scripts/build_github_handoff_fixture.mjs
+      - name: Scan exactly one fixture genomic batch, verify release asset and push durable checkpoint
+        run: bash scripts/github_fixture_checkpoint_handoff.sh
+
+  runner-two:
+    name: 'Independent GitHub cloud runner B: restore verified state and continue'
+    needs: runner-one
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      GH_TOKEN: ${{ github.token }}
+      BSNG_HANDOFF_MODE: fixture
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Rebuild same synthetic source from scratch on second ephemeral VM
+        run: node scripts/build_github_handoff_fixture.mjs
+      - name: Restore prior Git branch ledger, process next candidate partition and publish verified continuation
+        run: bash scripts/github_fixture_checkpoint_handoff.sh
+
+  audit:
+    name: 'Third GitHub cloud runner: independently recheck two published checkpoints and archive'
+    needs: runner-two
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      GH_TOKEN: ${{ github.token }}
+      BSNG_HANDOFF_MODE: fixture
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Generate identical synthetic source on third isolated VM
+        run: node scripts/build_github_handoff_fixture.mjs
+      - name: Independently audit two or more published candidate receipts
+        run: |
+          bash scripts/github_fixture_checkpoint_handoff.sh audit
+          node --input-type=module <<'NODE'
+          import {readFileSync} from 'node:fs';
+          import assert from 'node:assert/strict';
+          const index=JSON.parse(readFileSync('/tmp/bsng-v09-fixture-durable-ledger/fixture-v09/index.json','utf8'));
+          assert.ok(index.coverage.completedBatches>=2);
+          assert.equal(index.campaignType,'SYNTHETIC_TEST_FIXTURE');
+          assert.ok(index.receipts.every(r=>r.compressedCandidateReleaseTag===index.releaseTagPrefix));
+          assert.equal(index.coverage.candidateCountVerified,index.receipts.reduce((n,r)=>n+r.qualifyingCandidateCount,0));
+          assert.equal(index.coverage.status,'INCOMPLETE');
+          console.log('INDEPENDENT RESEARCH HANDOFF VERIFIED: '+index.coverage.completedBatches+
+            ' completed SYNTHETIC fixture batches, '+index.coverage.candidateCountVerified+' archived motif matches');
+          NODE
+      - name: Re-download prior runner's Release asset and compare persisted SHA256
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd /tmp/bsng-v09-fixture-durable-ledger/fixture-v09
+          read -r tag asset expected <<< "$(node -e "const x=require('./index.json');const r=x.receipts[x.receipts.length-2];console.log(x.releaseTagPrefix,r.compressedCandidateAssetName,r.compressedCandidateSha256)")"
+          test -n "$asset"
+          mkdir -p /tmp/bsng-v09-final-independent-audit
+          gh release download "$tag" --repo "$GITHUB_REPOSITORY" --pattern "$asset" --dir /tmp/bsng-v09-final-independent-audit
+          got="$(sha256sum /tmp/bsng-v09-final-independent-audit/"$asset" | cut -d' ' -f1)"
+          test "$got" = "$expected"
+          echo "Verified historical candidate archive from an earlier separate runner: $asset SHA256=$got"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: BSNG-v09-synthetic-cross-run-checkpoint-audit
+          path: |
+            /tmp/bsng-v09-fixture-durable-ledger/fixture-v09/index.json
+            /tmp/bsng-v09-fixture-durable-ledger/fixture-v09/plan.json
+            /tmp/bsng-v09-fixture-durable-ledger/fixture-v09/receipts/
+          retention-days: 30
+          if-no-files-found: error
