@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {createHash} from 'node:crypto';
 import {parseAssemblyReport,planWholeAssembly} from '../src/lib/whole-assembly-manifest.mjs';
 import {CTCF_SCREEN_POLICY} from '../src/lib/whole-assembly-ctcf-batch.mjs';
-import {makeCampaignIndex,auditCampaignIndex,nextCampaignBatch,addPublishedReceipt}
+import {makeCampaignIndex,auditCampaignIndex,nextCampaignBatch,addPublishedReceipt,candidateReleaseTag}
  from '../src/lib/github-campaign-state.mjs';
 const h=x=>createHash('sha256').update(x).digest('hex');
 function makePlan(){
@@ -97,4 +97,21 @@ test('no scientific status, track, candidate count or scope can be self-certifie
  assert.throws(()=>addPublishedReceipt(plan,one,wrong,{
   assetName:plan.batches[1].id+'.candidates.ndjson.gz',
   releaseTag:one.releaseTagPrefix}),/unsupported\/unmatched/);
+});
+
+test('authentic RefSeq candidate releases are sharded by 100 batches without changing science receipts',()=>{
+ const plan=makePlan();
+ const index=makeCampaignIndex(plan,{sourceFastaSha256:sourceHash,kind:'REAL_REFERENCE',codeCommit:'c'.repeat(40)});
+ assert.equal(candidateReleaseTag(plan,index,plan.batches[0].id),index.releaseTagPrefix+'-shard-000');
+ assert.equal(candidateReleaseTag(plan,index,plan.batches[plan.batches.length-1].id),index.releaseTagPrefix+'-shard-000');
+ assert.throws(()=>candidateReleaseTag(plan,index,'B999999'),/No such/);
+ const batch=plan.batches[0],receipt=receiptFor(batch);
+ const promoted=addPublishedReceipt(plan,index,receipt,{
+  releaseTag:index.releaseTagPrefix+'-shard-000',
+  assetName:batch.id+'.candidates.ndjson.gz'});
+ assert.equal(promoted.coverage.completedBatches,1);
+ assert.equal(auditCampaignIndex(plan,promoted).completedBatches,1);
+ assert.throws(()=>addPublishedReceipt(plan,index,receipt,{
+  releaseTag:index.releaseTagPrefix,
+  assetName:batch.id+'.candidates.ndjson.gz'}),/unsupported\/unmatched/);
 });
