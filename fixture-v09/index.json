@@ -69,6 +69,65 @@
       "compressedCandidateReleaseTag": "bsng-v09-fixture-0b6b4bb4c38a8fb49fc8",
       "publishedAt": "2026-10-16T09:46:24.757Z",
       "sourceCommit": "0f2c1339526120eba907e4f696d7c1ef8b40d54b"
+    },
+    {
+      "schemaVersion": 1,
+      "status": "VERIFIED_STORED",
+      "scientificStatus": "NATURAL_REFERENCE_CTCF_SEQUENCE_ONLY",
+      "batchId": "B000002",
+      "planSha256": "0167eb47cf84c149ff35839cb1fd701443dd1531fab5201af997abe2e05a405b",
+      "sourceFastaSha256": "bd3f66686274958ecdc3c3161c263a906c6d503a57dc1fcd639513b92ee1a79a",
+      "refseqAssemblyAccession": "GCF_000001405.40",
+      "track": "A_CHROMOSOMES",
+      "contig": "NC_000001.11",
+      "start1BasedInclusive": 41,
+      "end1BasedInclusive": 80,
+      "contigLength": 123,
+      "ownedBases": 40,
+      "validWindows": 40,
+      "ambiguousWindows": 0,
+      "terminalUnscorableStarts": 0,
+      "ambiguousReferenceBases": 0,
+      "qualifyingCandidateCount": 0,
+      "modelPfmSha256": "6ba2272c8b307e38e30768ca36aa12118fa1c69db428ed2048bebe1f2abb41a4",
+      "exploratoryThresholdLog2Odds": 15,
+      "thresholdMeaning": "EXPLORATORY_SEQUENCE_MODEL_ONLY_NOT_BIOLOGICALLY_CALIBRATED",
+      "minimumNaturalCtcfPwmLog2Odds": 15,
+      "maximumObservedNaturalCtcfPwmLog2Odds": -4.847292343219061,
+      "scoreFloorHistogram": {
+        "-24": 1,
+        "-47": 1,
+        "-32": 2,
+        "-27": 1,
+        "-15": 4,
+        "-34": 1,
+        "-14": 1,
+        "-13": 3,
+        "-19": 3,
+        "-38": 1,
+        "-5": 1,
+        "-26": 1,
+        "-35": 4,
+        "-29": 4,
+        "-28": 2,
+        "-22": 2,
+        "-16": 2,
+        "-31": 2,
+        "-10": 2,
+        "-33": 2
+      },
+      "ownedReferenceUppercaseSha256": "aaebc2c0f7ae545f862c06ef50f488a3cf32170a1a8c73624df8d387fc91693f",
+      "uncompressedCandidateNdjsonSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "compressedCandidateSha256": "59869db34853933b239f1e2219cf7d431da006aa919635478511fabbfc8849d2",
+      "candidateArchiveFile": "B000002.candidates.ndjson.gz",
+      "actualBsngBinding": "NOT_ASSESSABLE",
+      "actualGenomicIntegration": "NOT_ASSESSABLE",
+      "codeCommit": "local-test-or-uncommitted",
+      "createdAt": "2026-10-16T09:46:34.156Z",
+      "compressedCandidateAssetName": "B000002.candidates.ndjson.gz",
+      "compressedCandidateReleaseTag": "bsng-v09-fixture-0b6b4bb4c38a8fb49fc8",
+      "publishedAt": "2026-10-16T09:46:37.008Z",
+      "sourceCommit": "0f2c1339526120eba907e4f696d7c1ef8b40d54b"
     }
   ],
   "coverage": {
@@ -76,17 +135,17 @@
     "excludedGenbankOnlySequenceCount": 0,
     "excludedGenbankOnlyBases": 0,
     "allAssemblyReportRepresentationsComplete": false,
-    "completedBatches": 1,
+    "completedBatches": 2,
     "totalBatches": 106,
-    "completedOwnedBases": 40,
+    "completedOwnedBases": 80,
     "totalOwnedBases": 3245,
     "coverageByTrack": {
       "A_CHROMOSOMES": {
-        "completedBatches": 1,
+        "completedBatches": 2,
         "totalBatches": 98,
-        "completedOwnedBases": 40,
+        "completedOwnedBases": 80,
         "totalOwnedBases": 2993,
-        "coveredFraction": 0.013364517206815904
+        "coveredFraction": 0.026729034413631808
       },
       "B_REMAINING_PRIMARY": {
         "completedBatches": 0,
@@ -103,7 +162,7 @@
         "coveredFraction": 0
       }
     },
-    "overallFraction": 0.012326656394453005,
+    "overallFraction": 0.02465331278890601,
     "candidateCountVerified": 1,
     "bsngPhysicalBindingStatus": "NOT_ASSESSABLE",
     "excludedFromCompleteness": "FASTA may contain N; genomic-start coordinates are still explicitly accounted for"
@@ -114,5 +173,5 @@
     "GitHub Release assets are versioned research artifacts, not a transactional genomic database.",
     "No BSNG nanite physical binding or genomic insertion safety is measured."
   ],
-  "updatedAt": "2026-10-16T09:46:24.758Z"
+  "updatedAt": "2026-10-16T09:46:37.008Z"
 }
