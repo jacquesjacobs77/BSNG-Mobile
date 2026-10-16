@@ -97,10 +97,13 @@ jobs:
             /tmp/bsng-v09-real-output/B*.json
           if-no-files-found: error
           retention-days: 30
-      - name: Safely schedule at most one more bounded verified cloud run when explicitly budgeted
-        if: ${{ success() && github.event_name == 'workflow_dispatch' && inputs.mode == 'scan-one-batch' && inputs.automatic_followup_jobs != '0' }}
+      - name: Safely schedule at most one more bounded verified cloud run when budgeted
+        # The first push-backed supervised pilot may prove ONE automatic handoff;
+        # manually requested workflows can similarly authorize at most two.
+        # No unbounded recurrence is possible: the counter decreases to 0.
+        if: ${{ success() && (github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.mode == 'scan-one-batch' && inputs.automatic_followup_jobs != '0')) }}
         env:
-          CURRENT_REMAINING: ${{ inputs.automatic_followup_jobs }}
+          CURRENT_REMAINING: ${{ github.event_name == 'push' && '1' || inputs.automatic_followup_jobs }}
         run: |
           set -euo pipefail
           test "$CURRENT_REMAINING" -ge 1
