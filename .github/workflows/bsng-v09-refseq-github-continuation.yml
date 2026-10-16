@@ -1,0 +1,111 @@
+name: BSNG v0.9 real GRCh38 RefSeq GitHub Actions continuous campaign pilot
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/bsng-v09-refseq-github-continuation.yml'
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'Inspect checkpoints without downloading FASTA, or run exactly one verified 10M batch'
+        required: true
+        type: choice
+        default: inspect-only
+        options:
+          - inspect-only
+          - scan-one-batch
+      automatic_followup_jobs:
+        description: 'After success, dispatch 0 to 2 more verified single-batch jobs (budget cap)'
+        type: choice
+        required: true
+        default: '0'
+        options:
+          - '0'
+          - '1'
+          - '2'
+
+permissions:
+  contents: write
+  actions: write
+
+concurrency:
+  group: bsng-v09-official-grch38-sequential-reference-campaign
+  cancel-in-progress: false
+
+jobs:
+  public-reference-github-pilot:
+    name: Official NCBI GRCh38.p14 public FASTA, at most one 10M batch per job
+    runs-on: ubuntu-latest
+    timeout-minutes: 110
+    env:
+      GH_TOKEN: ${{ github.token }}
+      BSNG_CAMPAIGN_DIR: /tmp/bsng-v09-real-source
+      BSNG_LOCAL_OUTPUT: /tmp/bsng-v09-real-output
+      BSNG_REAL_REFERENCE_PILOT_ACK: 'TRUE'
+    steps:
+      - name: Check out v0.9 research implementation, leaving Android app untouched
+        uses: actions/checkout@v4
+        with:
+          ref: feature/bsng-github-continuation-v0.9
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Record exact scientific code SHA (must match frozen registry on every continuation)
+        run: |
+          echo "BSNG_CODE_REVISION=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
+          echo "Scientific code revision: $(git rev-parse HEAD)"
+      - name: Inspect current public research checkpoint without fetching the whole genome
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.mode == 'inspect-only' }}
+        run: |
+          if git ls-remote --exit-code --heads origin bsng-v09-real-ctcf-checkpoints >/dev/null 2>&1; then
+            git fetch origin bsng-v09-real-ctcf-checkpoints
+            git show FETCH_HEAD:grch38p14-natural-ctcf-v09/index.json | node -e '
+             let s="";process.stdin.on("data",x=>s+=x).on("end",()=>{
+              const i=JSON.parse(s);
+              console.log(JSON.stringify({campaign:i.id,source:i.assembly,
+               status:i.status,completed:i.coverage.completedBatches,
+               planned:i.coverage.totalBatches,archivedCandidates:i.coverage.candidateCountVerified,
+               excludedGenbankOnly:i.coverage.excludedGenbankOnlySequenceCount,
+               bsngBindingStatus:"NOT ASSESSABLE"},null,2));
+             });'
+          else
+            echo "No authentic GRCh38 RefSeq campaign started yet. To start one supervised 10M pilot, use Run workflow > scan-one-batch."
+          fi
+      - name: Restore exact NCBI GRCh38.p14 FASTA source cache (ephemeral cache is never treated as science archive)
+        if: ${{ github.event_name == 'push' || inputs.mode == 'scan-one-batch' }}
+        id: sourcecache
+        uses: actions/cache@v4
+        with:
+          path: /tmp/bsng-v09-real-source
+          key: bsng-ncbi-grch38-p14-gcf00000140540-source-v1
+      - name: Retrieve official NCBI FASTA if needed and ALWAYS verify MD5 SHA256 and assembly index
+        if: ${{ github.event_name == 'push' || inputs.mode == 'scan-one-batch' }}
+        run: bash scripts/prepare_github_refseq_full_source.sh
+      - name: Run one exact accession-and-coordinate genomic batch then permanently publish release candidate asset + SHA receipt
+        if: ${{ github.event_name == 'push' || inputs.mode == 'scan-one-batch' }}
+        run: bash scripts/github_refseq_checkpoint_handoff.sh
+      - name: Upload a secondary short-lived audit copy (not canonical storage)
+        if: ${{ success() && (github.event_name == 'push' || inputs.mode == 'scan-one-batch') }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: BSNG-v09-real-GRCh38-one-batch-audit-${{ github.run_id }}
+          path: |
+            /tmp/bsng-v09-real-durable-ledger/grch38p14-natural-ctcf-v09/index.json
+            /tmp/bsng-v09-real-durable-ledger/grch38p14-natural-ctcf-v09/source-freeze.json
+            /tmp/bsng-v09-real-output/B*.json
+          if-no-files-found: error
+          retention-days: 30
+      - name: Safely schedule at most one more bounded verified cloud run when explicitly budgeted
+        if: ${{ success() && github.event_name == 'workflow_dispatch' && inputs.mode == 'scan-one-batch' && inputs.automatic_followup_jobs != '0' }}
+        env:
+          CURRENT_REMAINING: ${{ inputs.automatic_followup_jobs }}
+        run: |
+          set -euo pipefail
+          test "$CURRENT_REMAINING" -ge 1
+          test "$CURRENT_REMAINING" -le 2
+          next=$((CURRENT_REMAINING-1))
+          gh workflow run bsng-v09-refseq-github-continuation.yml --repo "$GITHUB_REPOSITORY" --ref main \
+            -f mode=scan-one-batch -f automatic_followup_jobs="$next"
+          echo "Scheduled ONE follow-up job with $next future jobs remaining; cannot run indefinitely."
