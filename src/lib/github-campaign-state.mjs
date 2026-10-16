@@ -96,10 +96,18 @@ export function addPublishedReceipt(plan,index,receipt,{assetName,releaseTag,sou
     !/^B\d{6,}$/.test(receipt.batchId))throw Error('Invalid candidate promotion inputs');
  const before=index.receipts.find(r=>r.batchId===receipt.batchId);
  if(before){
-  const merged={...receipt,compressedCandidateAssetName:assetName,
-   compressedCandidateReleaseTag:releaseTag};
-  if(JSON.stringify(before)!==JSON.stringify(merged))
-   throw Error('Attempt to replace a previously published non-identical receipt');
+  // A retry may re-create the same genome result at a different wall clock
+  // time. Only byte-identical *candidate archives* and the frozen scientific
+  // receipt fields may be treated as already published.
+  for(const key of ['compressedCandidateSha256','uncompressedCandidateNdjsonSha256',
+    'ownedReferenceUppercaseSha256','qualifyingCandidateCount','planSha256',
+    'sourceFastaSha256','modelPfmSha256','start1BasedInclusive',
+    'end1BasedInclusive','refseqAssemblyAccession']){
+    if(before[key]!==receipt[key])throw Error('Refuse replacement of already published scientific receipt: '+key);
+  }
+  if(before.compressedCandidateAssetName!==assetName||
+    before.compressedCandidateReleaseTag!==releaseTag)
+    throw Error('Refuse replacement with another release asset identity');
   return index;
  }
  const expected=nextCampaignBatch(plan,index);
