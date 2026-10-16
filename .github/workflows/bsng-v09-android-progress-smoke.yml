@@ -1,0 +1,52 @@
+name: BSNG v0.9 Android whole-GRCh38 cloud progress smoke check
+on:
+  push:
+    branches:
+      - feature/bsng-github-continuation-v0.9
+    paths:
+      - 'App.tsx'
+      - 'src/screens/WholeGenomeCampaignPanel.tsx'
+      - 'tests/github-campaign-state.test.mjs'
+      - '.github/workflows/bsng-v09-android-progress-smoke.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  scientific-regressions-and-android-js:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Compile TypeScript and run all scientific tests
+        run: |
+          npm install --no-audit --no-fund
+          npm run check
+          npm test
+      - name: Audit public multi-job GRCh38 provenance registry and read-only phone source URL
+        run: |
+          curl --fail --location --silent --show-error --max-time 25 \
+            'https://raw.githubusercontent.com/jacquesjacobs77/BSNG-Mobile/bsng-v09-real-ctcf-checkpoints/grch38p14-natural-ctcf-v09/index.json' \
+            -o /tmp/bsng-real-progress.json
+          node --input-type=module <<'NODE'
+          import {readFileSync} from 'node:fs';
+          import assert from 'node:assert/strict';
+          const i=JSON.parse(readFileSync('/tmp/bsng-real-progress.json','utf8'));
+          assert.equal(i.campaignType,'REAL_REFERENCE');
+          assert.equal(i.assembly,'GRCh38.p14');
+          assert.equal(i.scientificStatus,'NATURAL_CTCF_REFERENCE_COMPUTATION_NOT_BSNG_BINDING');
+          assert.equal(i.coverage.totalBatches,1003);
+          assert.ok(i.coverage.completedBatches>=3);
+          assert.ok(i.coverage.completedOwnedBases>=30_000_000);
+          assert.ok(i.coverage.candidateCountVerified>0);
+          assert.equal(i.sourceCodeCommit,'e91c8d85b0c92d56666383e9e7e3a36d0133d391');
+          assert.ok(i.coverage.excludedGenbankOnlyBases>0);
+          assert.ok(i.receipts.every(r=>r.actualBsngBinding==='NOT_ASSESSABLE'));
+          console.log('READ-ONLY MOBILE CAMPAIGN PROGRESS CAN VERIFY THREE REAL PERSISTED 10M CLOUD BATCHES');
+          NODE
+      - name: Build Android JS bundle compatible with installed 0.2.0 native APK
+        run: npx expo export --platform android --output-dir /tmp/bsng-v09-mobile-js --clear
