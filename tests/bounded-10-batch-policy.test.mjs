@@ -88,7 +88,7 @@ test('no fake complete genome status, skipped/duplicated batches, altered origin
  x=structuredClone(registry());x.coverage.completedBatches=13;
  assert.throws(()=>auditTenBatchContinuation(x),/checkpoint/);
  x=structuredClone(registry());x.receipts[2].qualifyingCandidateCount=999;x.coverage.candidateCountVerified=1487;
- assert.throws(()=>auditTenBatchContinuation(x),/original independent/);
+ assert.throws(()=>auditTenBatchContinuation(x),/Original independent/);
  x=structuredClone(registry());x.receipts[1].batchId='B000001';
  assert.throws(()=>auditTenBatchContinuation(x),/B000002/);
  assert.throws(()=>auditTenBatchContinuation(registry(),{target:1003}),/Target must/);
