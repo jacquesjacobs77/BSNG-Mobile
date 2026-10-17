@@ -1,0 +1,53 @@
+name: BSNG 10-batch controlled campaign implementation verification
+on:
+  push:
+    branches:
+      - feature/bsng-controlled-ten-batch-v1.0
+    paths:
+      - 'scripts/run_controlled_10_batch_campaign.sh'
+      - 'scripts/audit_bounded_10_batch.mjs'
+      - 'src/lib/bounded-10-batch-policy.mjs'
+      - 'tests/bounded-10-batch-policy.test.mjs'
+      - '.github/workflows/bsng-v10-bounded-continuation-validate.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  independently-check-cap-and-authentic-checkpoint:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate orchestrator syntax (without launching genome jobs)
+        run: |
+          bash -n scripts/run_controlled_10_batch_campaign.sh
+          node --check scripts/audit_bounded_10_batch.mjs
+          node --check src/lib/bounded-10-batch-policy.mjs
+      - name: TypeScript, all reference-genome and bounded-campaign regression tests
+        run: |
+          npm install --no-audit --no-fund
+          npm run check
+          npm test
+      - name: Independently verify current real NCBI reference campaign baseline
+        run: |
+          curl --fail --location --silent --show-error --max-time 30 \
+            https://raw.githubusercontent.com/jacquesjacobs77/BSNG-Mobile/bsng-v09-real-ctcf-checkpoints/grch38p14-natural-ctcf-v09/index.json \
+            -o /tmp/bsng-authentic-baseline.json
+          node scripts/audit_bounded_10_batch.mjs snapshot /tmp/bsng-authentic-baseline.json
+          test "$(node scripts/audit_bounded_10_batch.mjs count /tmp/bsng-authentic-baseline.json)" -eq 3
+          node --input-type=module <<'NODE'
+          import {readFileSync} from 'node:fs';
+          import assert from 'node:assert/strict';
+          const x=JSON.parse(readFileSync('/tmp/bsng-authentic-baseline.json','utf8'));
+          assert.equal(x.coverage.completedBatches,3);
+          assert.equal(x.coverage.completedOwnedBases,30_000_000);
+          assert.equal(x.coverage.candidateCountVerified,684);
+          assert.equal(x.sourceCodeCommit,'e91c8d85b0c92d56666383e9e7e3a36d0133d391');
+          assert.ok(x.receipts.every(r=>r.actualBsngBinding==='NOT_ASSESSABLE'));
+          console.log('PRE-FLIGHT REAL AUTHENTIC GRCH38 REFERENCE BASELINE VERIFIED. NO NEW GENOME BATCH EXECUTED.');
+          NODE
