@@ -1,0 +1,55 @@
+name: BSNG v1.1 reference-to-physical-binding feasibility validation
+on:
+  push:
+    branches:
+      - feature/bsng-physical-binding-feasibility-v1.1
+    paths:
+      - 'src/lib/bsng-binding-feasibility-gate.mjs'
+      - 'scripts/audit_bsng_binding_readiness.mjs'
+      - 'tests/bsng-binding-feasibility-gate.test.mjs'
+      - 'docs/bsng-v11-physical-binding-persistence-nonharm-preregistration.md'
+      - '.github/workflows/bsng-v11-binding-readiness-audit.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  evidence-gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Compile and run scientific regression suites
+        run: |
+          npm install --no-audit --no-fund
+          npm run check
+          npm test
+      - name: Read independently archived public human genome registry and refuse unsupported physical binding claims
+        env:
+          BSNG_READINESS_DIR: artifacts/binding-readiness
+        run: |
+          node scripts/audit_bsng_binding_readiness.mjs
+          node --input-type=module <<'NODE'
+          import {readFileSync} from 'node:fs';
+          import assert from 'node:assert/strict';
+          const x=JSON.parse(readFileSync('artifacts/binding-readiness/binding-feasibility-current.json','utf8'));
+          assert.equal(x.sourceEvidence.referenceBasesProcessed,130_000_000);
+          assert.equal(x.sourceEvidence.batchesVerified,13);
+          assert.equal(x.sourceEvidence.naturalCtcfMotifQualifiedCount,1689);
+          assert.equal(x.physicalConstructSpecified,false);
+          assert.equal(x.physicalBindingStatus,'NOT_ASSESSABLE');
+          assert.equal(x.molecularPersistenceStatus,'NOT_ASSESSABLE');
+          assert.equal(x.nonHarmStatus,'NOT_ASSESSABLE');
+          assert.equal(x.integrationSafetyStatus,'NOT_ASSESSABLE');
+          assert.equal(x.submittedMeasurementClasses,0);
+          assert.equal(x.scientificQuestions.length,7);
+          console.log('VALIDATED: GENOME COMPUTATION IS REAL. PHYSICAL BSNG BINDING CANNOT BE ASSERTED.');
+          NODE
+      - uses: actions/upload-artifact@v4
+        with:
+          name: BSNG-v11-binding-persistence-nonharm-evidence-gap-report
+          path: artifacts/binding-readiness/binding-feasibility-current.json
+          retention-days: 90
+          if-no-files-found: error
