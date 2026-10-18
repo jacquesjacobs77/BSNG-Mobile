@@ -62,7 +62,7 @@ Our GitHub Actions release APK uses native prebuild, so `expo.updates.requestHea
 A manual GitHub Actions workflow is provided at **Actions → Publish BSNG Android OTA update**. It is intentionally manual until release validation; it does not publish on every commit.
 To activate the workflow securely:
 1. In Expo, create an access token belonging to a user permitted to manage the `bsngs-team` project: https://expo.dev/settings/access-tokens
-2. Add it to **this repository** at https://github.com/jacquesjacobs77/BSNG-Mobile/settings/secrets/actions as the secret `EXPO_TOKEN`. Never put the token in source code, screenshots or chat.
+2. Add it to **this repository** at https://github.com/jacquesjacobs77/BSNG-Mobile/settings/secrets/actions as the secret `BSNG_STUDIO_GITHUB_UPDATES` (this is the exact key used by `.github/workflows/publish-eas-update.yml`). Never put the token in source code, screenshots or chat.
 3. Use the action to publish a tested Android update to the `preview` channel. Ensure the channel exists and maps to the same-name branch; check Expo dashboard under Updates → Channels, or use `eas channel:create preview`.
 4. To test: publish an obvious **JavaScript-only** change without modifying `runtimeVersion`, and fully close/reopen the release app twice to fetch and apply the update.
 
@@ -70,3 +70,16 @@ After this test, we may automate approved JavaScript-only updates on a stable br
 
 ## Public-reference query
 Research → Public reference DNA → enter a region, for example `X:1000000..1000092:1` → **Fetch real reference sequence**. This requires internet access. Requests are limited locally to 15–5,000 bases; ambiguous reference bases are rejected rather than silently counted as A/C/G/T. The displayed reference identifier is returned by the API. Source: https://rest.ensembl.org/documentation/info/sequence_region
+
+## Proposed evidence-register OTA — 18 October 2026
+
+This branch adds a **read-only Evidence** tab and overview tile, without changing the Android package, runtime, native dependencies, Expo project ID or `0.2.0` app version. It summarizes aggregated TrueOT (SpCas9 activity-label) and CTCF retrospective reference benchmarks, GRCh38.p14 manifest provenance, and explicit **NOT ASSESSABLE** status for BSNG physical hybrid binding and genomic integration. The mobile app remains a research UI; the new tab is not a laboratory result or a whole-genome scanner.
+
+**Release procedure (manual, only after review and tests):**
+1. Verify the installed Vivo build is **BSNG Studio v0.2.0**, package `za.jastudio.bsngresearch`, and was built with Expo Updates on the `preview` channel. The older v0.1 app cannot receive this OTA.
+2. Review and merge the evidence-register pull request. Confirm `npm run check` and `npm test` pass and validate the mobile UI. Leave `expo.version`, runtime policy, and Android version code unchanged for this JavaScript-only update.
+3. Confirm an authorized Expo token is stored as the GitHub Actions secret `BSNG_STUDIO_GITHUB_UPDATES`; verify the Expo `preview` channel maps to the branch intended to receive updates.
+4. On GitHub open **Actions → Publish BSNG Android OTA update → Run workflow** on **main**. Inspect the job result and the published update's runtime/channel in Expo. If publishing fails, investigate the logs; do not claim delivery.
+5. With internet enabled on the Vivo, completely close and reopen BSNG Studio twice. Look for **Evidence** on the bottom navigation or side rail. Existing session notes are not persistent, so copy any important unsaved notes before closing.
+
+**Important:** The GitHub pull request or a new APK build does not by itself publish the OTA. ChatGPT cannot operate the Vivo device directly or inspect the Expo project's private publishing credentials. Do not uninstall the working build while diagnosing updates.
