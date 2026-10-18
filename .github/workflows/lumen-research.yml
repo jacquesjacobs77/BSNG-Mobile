@@ -1,6 +1,14 @@
 name: Lumen controlled parallel research audit
 on:
   workflow_dispatch:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'App.tsx'
+      - 'src/**'
+      - 'scripts/lumen_*.mjs'
+      - 'tests/lumen-*.test.mjs'
+      - '.github/workflows/lumen-research.yml'
   push:
     branches: [main]
     paths:
@@ -8,6 +16,7 @@ on:
       - 'scripts/lumen_ai_reviewer.mjs'
       - 'scripts/lumen_checkpoint_reader.mjs'
       - 'tests/lumen-research.test.mjs'
+      - 'tests/lumen-archive.test.mjs'
       - '.github/workflows/lumen-research.yml'
 permissions:
   contents: read
@@ -19,15 +28,15 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     env:
-      BSNG_REVIEW_API_KEY: ${{ secrets.BSNG_REVIEW_API_KEY }}
-      BSNG_REVIEW_MODEL: ${{ vars.BSNG_REVIEW_MODEL }}
+      BSNG_REVIEW_API_KEY: ${{ github.event_name == 'pull_request' && '' || secrets.BSNG_REVIEW_API_KEY }}
+      BSNG_REVIEW_MODEL: ${{ github.event_name == 'pull_request' && '' || vars.BSNG_REVIEW_MODEL }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
       - name: Verify the deterministic parallel research lanes
-        run: node --test tests/lumen-research.test.mjs
+        run: node --test tests/lumen-*.test.mjs
       - name: Run bounded synthetic reference audit on 4 parallel worker threads
         run: node scripts/lumen_research_engine.mjs --out bsng-lumen-research-results.json
       - name: Fetch archived verified GRCh38 CTCF reference checkpoint (read only)
