@@ -1,0 +1,42 @@
+name: Lumen controlled parallel research audit
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/lumen_research_engine.mjs'
+      - 'scripts/lumen_ai_reviewer.mjs'
+      - 'tests/lumen-research.test.mjs'
+      - '.github/workflows/lumen-research.yml'
+permissions:
+  contents: read
+concurrency:
+  group: lumen-parallel-research-audit
+  cancel-in-progress: false
+jobs:
+  synthetic-reference-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      BSNG_REVIEW_API_KEY: ${{ secrets.BSNG_REVIEW_API_KEY }}
+      BSNG_REVIEW_MODEL: ${{ vars.BSNG_REVIEW_MODEL }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify the deterministic parallel research lanes
+        run: node --test tests/lumen-research.test.mjs
+      - name: Run bounded synthetic reference audit on 4 parallel worker threads
+        run: node scripts/lumen_research_engine.mjs --out bsng-lumen-research-results.json
+      - name: Run Lumen AI evidence reviewer if provisioned; otherwise report NOT_CONNECTED
+        run: node scripts/lumen_ai_reviewer.mjs bsng-lumen-research-results.json bsng-lumen-ai-review.json
+      - name: Store reproducible reports (never raw genomic sequences)
+        uses: actions/upload-artifact@v4
+        with:
+          name: lumen-parallel-research-audit-${{ github.run_id }}
+          path: |
+            bsng-lumen-research-results.json
+            bsng-lumen-ai-review.json
+          retention-days: 30
+          if-no-files-found: error
