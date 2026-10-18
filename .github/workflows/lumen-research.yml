@@ -1,0 +1,59 @@
+name: Lumen controlled parallel research audit
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'App.tsx'
+      - 'src/**'
+      - 'scripts/lumen_*.mjs'
+      - 'tests/lumen-*.test.mjs'
+      - '.github/workflows/lumen-research.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/lumen_research_engine.mjs'
+      - 'scripts/lumen_ai_reviewer.mjs'
+      - 'scripts/lumen_checkpoint_reader.mjs'
+      - 'tests/lumen-research.test.mjs'
+      - 'tests/lumen-archive.test.mjs'
+      - '.github/workflows/lumen-research.yml'
+permissions:
+  contents: read
+concurrency:
+  group: lumen-parallel-research-audit
+  cancel-in-progress: false
+jobs:
+  synthetic-reference-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      BSNG_REVIEW_API_KEY: ${{ github.event_name != 'pull_request' && secrets.BSNG_REVIEW_API_KEY || '' }}
+      BSNG_REVIEW_MODEL: ${{ github.event_name != 'pull_request' && vars.BSNG_REVIEW_MODEL || '' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify the deterministic parallel research lanes
+        run: node --test tests/lumen-*.test.mjs
+      - name: Run bounded synthetic reference audit on 4 parallel worker threads
+        run: node scripts/lumen_research_engine.mjs --out bsng-lumen-research-results.json
+      - name: Fetch archived verified GRCh38 CTCF reference checkpoint (read only)
+        run: |
+          git fetch --no-tags --depth=1 origin refs/heads/bsng-v09-real-ctcf-checkpoints
+          git show FETCH_HEAD:grch38p14-natural-ctcf-v09/index.json > bsng-ctcf-checkpoint-index.json
+      - name: Summarize existing real reference campaign without treating candidates as nanite sites
+        run: node scripts/lumen_checkpoint_reader.mjs bsng-ctcf-checkpoint-index.json bsng-campaign-summary.json
+      - name: Run Lumen AI evidence reviewer if provisioned; otherwise report NOT_CONNECTED
+        run: node scripts/lumen_ai_reviewer.mjs bsng-lumen-research-results.json bsng-lumen-ai-review.json bsng-campaign-summary.json
+      - name: Store reproducible reports (never raw genomic sequences)
+        uses: actions/upload-artifact@v4
+        with:
+          name: lumen-parallel-research-audit-${{ github.run_id }}
+          path: |
+            bsng-lumen-research-results.json
+            bsng-lumen-ai-review.json
+            bsng-campaign-summary.json
+          retention-days: 30
+          if-no-files-found: error

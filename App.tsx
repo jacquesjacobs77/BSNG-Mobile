@@ -3,12 +3,14 @@ import { Alert, ScrollView, Share, StatusBar, StyleSheet, Text, TextInput, Touch
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { analyzeSequence, normalizeSequence, SAMPLE_SEQUENCE, DEMO_MAX_BASES, type SequenceSummary } from './src/lib/sequence';
 import ResearchScreen from './src/screens/ResearchScreen';
+import ResearchEvidenceScreen from './src/screens/ResearchEvidenceScreen';
+import LumenLabScreen from './src/screens/LumenLabScreen';
 
-type Page = 'overview' | 'scan' | 'research' | 'nanite' | 'results' | 'notes' | 'settings';
+type Page = 'overview' | 'scan' | 'research' | 'evidence' | 'lumen' | 'nanite' | 'results' | 'notes' | 'settings';
 type Note = { id: number; title: string; body: string };
 const colors = { bg:'#070E1B', panel:'#101C2C', border:'#284158', cyan:'#56E8E3', purple:'#AF90FF', green:'#75DAAF', amber:'#F9C878', white:'#E9F5FC', muted:'#94AABF' };
 const menu: {id:Page;label:string;glyph:string}[] = [
-  {id:'overview',label:'Overview',glyph:'⌂'}, {id:'scan',label:'Sequence',glyph:'⌁'}, {id:'research',label:'Research',glyph:'◈'}, {id:'nanite',label:'Nanite',glyph:'⬡'},
+  {id:'overview',label:'Overview',glyph:'⌂'}, {id:'scan',label:'Sequence',glyph:'⌁'}, {id:'research',label:'Research',glyph:'◈'}, {id:'evidence',label:'Evidence',glyph:'▤'}, {id:'lumen',label:'Lumen',glyph:'✦'}, {id:'nanite',label:'Nanite',glyph:'⬡'},
   {id:'results',label:'Results',glyph:'▥'}, {id:'notes',label:'Notes',glyph:'✎'}, {id:'settings',label:'Settings',glyph:'⚙'}
 ];
 const para = (text:string) => <Text style={s.para}>{text}</Text>;
@@ -74,6 +76,8 @@ function AppBody() {
     <View style={s.grid}>
       {quick('⌁','Sequence analysis','Run local GC demonstration','scan')}
       {quick('◈','Research lab','Live-input genomic signal dashboard','research')}
+      {quick('▤','Evidence register','RNA, protein, provenance and feasibility gates','evidence')}
+      {quick('✦','Lumen research','Parallel audit workbench and thesis challenges','lumen')}
       {quick('⬡','Nanite hypotheses','Explore research categories','nanite')}
       {quick('▥','Results','Examine and share a report','results')}
       {quick('✎','Lab notebook','Record session observations','notes')}
@@ -158,6 +162,10 @@ function AppBody() {
       {para('BSNG desktop simulator: not connected')}
       {para('Research database: not connected')}
       {para('Reference genome: not loaded')}
+      {para('Evidence snapshot: 18 October 2026 (read-only)')}
+      {para('Lumen local sequence analysis: available')}
+      {para('Lumen cloud AI reviewer: requires server-side configuration')}
+      {para('OTA runtime: 0.2.0 / preview channel; update publication requires Expo credentials')}
     </Box>
     <Box><Text style={[s.eyebrow,{color:colors.purple}]}>PLANNED BACKEND TARGETS</Text>
       {para('15M-base streaming batches • persisted checkpoints • authenticated AI assistance • immutable analysis history • reference validation.')}
@@ -166,7 +174,7 @@ function AppBody() {
       {para('Do not add identifiable human genomic data or API keys to this prototype. No network data submission or permanent notes storage is provided.')}
     </Box>
   </>;}
-  const screens:Record<Page,()=>React.ReactNode>={overview,scan,research:()=> <ResearchScreen sequence={sequence} setSequence={setSequence} sampleName={sampleName} setSampleName={setSampleName} onOpenResults={analyze}/>,nanite,results,notes:notesPage,settings};
+  const screens:Record<Page,()=>React.ReactNode>={overview,scan,research:()=> <ResearchScreen sequence={sequence} setSequence={setSequence} sampleName={sampleName} setSampleName={setSampleName} onOpenResults={analyze}/>,evidence:()=> <ResearchEvidenceScreen/>,lumen:()=> <LumenLabScreen sequence={sequence} sampleName={sampleName}/>,nanite,results,notes:notesPage,settings};
   return <SafeAreaView style={s.safe} edges={['top','left','right','bottom']}>
     <StatusBar barStyle="light-content" backgroundColor={colors.bg}/>
     <View style={s.header}>
