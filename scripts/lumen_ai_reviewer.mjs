@@ -5,7 +5,9 @@ import { readFileSync, writeFileSync } from 'node:fs';
 const inputPath = process.argv[2] || 'bsng-lumen-research-results.json';
 const outputPath = process.argv[3] || 'bsng-lumen-ai-review.json';
 const raw = JSON.parse(readFileSync(inputPath, 'utf8'));
+const campaign = process.argv[4] ? JSON.parse(readFileSync(process.argv[4], 'utf8')) : null;
 const reviewerInput = {
+  archived_real_reference_campaign: campaign,
   engine: raw.engine,
   input: {origin: raw.input.origin, length_bp: raw.input.length_bp, genomic_coordinates: raw.input.genomic_coordinates},
   results: raw.results,
