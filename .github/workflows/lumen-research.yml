@@ -28,8 +28,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     env:
-      BSNG_REVIEW_API_KEY: ${{ github.event_name == 'pull_request' && '' || secrets.BSNG_REVIEW_API_KEY }}
-      BSNG_REVIEW_MODEL: ${{ github.event_name == 'pull_request' && '' || vars.BSNG_REVIEW_MODEL }}
+      BSNG_REVIEW_API_KEY: ${{ github.event_name != 'pull_request' && secrets.BSNG_REVIEW_API_KEY || '' }}
+      BSNG_REVIEW_MODEL: ${{ github.event_name != 'pull_request' && vars.BSNG_REVIEW_MODEL || '' }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
