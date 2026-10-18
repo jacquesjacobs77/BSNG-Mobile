@@ -6,6 +6,7 @@ on:
     paths:
       - 'scripts/lumen_research_engine.mjs'
       - 'scripts/lumen_ai_reviewer.mjs'
+      - 'scripts/lumen_checkpoint_reader.mjs'
       - 'tests/lumen-research.test.mjs'
       - '.github/workflows/lumen-research.yml'
 permissions:
@@ -29,8 +30,14 @@ jobs:
         run: node --test tests/lumen-research.test.mjs
       - name: Run bounded synthetic reference audit on 4 parallel worker threads
         run: node scripts/lumen_research_engine.mjs --out bsng-lumen-research-results.json
+      - name: Fetch archived verified GRCh38 CTCF reference checkpoint (read only)
+        run: |
+          git fetch --no-tags --depth=1 origin refs/heads/bsng-v09-real-ctcf-checkpoints
+          git show FETCH_HEAD:grch38p14-natural-ctcf-v09/index.json > bsng-ctcf-checkpoint-index.json
+      - name: Summarize existing real reference campaign without treating candidates as nanite sites
+        run: node scripts/lumen_checkpoint_reader.mjs bsng-ctcf-checkpoint-index.json bsng-campaign-summary.json
       - name: Run Lumen AI evidence reviewer if provisioned; otherwise report NOT_CONNECTED
-        run: node scripts/lumen_ai_reviewer.mjs bsng-lumen-research-results.json bsng-lumen-ai-review.json
+        run: node scripts/lumen_ai_reviewer.mjs bsng-lumen-research-results.json bsng-lumen-ai-review.json bsng-campaign-summary.json
       - name: Store reproducible reports (never raw genomic sequences)
         uses: actions/upload-artifact@v4
         with:
@@ -38,5 +45,6 @@ jobs:
           path: |
             bsng-lumen-research-results.json
             bsng-lumen-ai-review.json
+            bsng-campaign-summary.json
           retention-days: 30
           if-no-files-found: error
